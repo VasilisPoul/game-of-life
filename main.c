@@ -11,10 +11,13 @@ int main(int argc, char** argv){
   
   int** array = create(n, m);
 
+  print_array(array, n, m);
+  printf("\n");
   initialize(array, n, m);
 
   /*print initialized array*/
   
   print_array(array, n, m);
 
+  operate( array, n, m);
 }

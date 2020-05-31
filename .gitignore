@@ -156,7 +156,7 @@ fabric.properties
 .history
 
 game_of_life
-
 main
+launch.json
 
 # End of https://www.gitignore.io/api/c,clion,visualstudiocode
