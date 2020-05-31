@@ -35,7 +35,7 @@ void initialize(int **array, int n, int m) {
 void print_array(int **array, int n, int m) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
-            printf("%s ", array[i][j] ? "\u2B1C" : "\u2B1B");
+            printf("%s ", array[i][j] ? "\u2B1B" : "\u2B1C");
         }
         printf("\n");
     }
