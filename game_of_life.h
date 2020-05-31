@@ -4,5 +4,6 @@
 int** create(int n, int m);
 void initialize(int** array, int n, int m);
 void print_array(int** array, int n, int m);
+int operate(int** array, int n, int m);
 
 #endif
