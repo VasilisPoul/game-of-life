@@ -2,19 +2,9 @@
 
 #include "game_of_life.h"
 
-#define N 10;
-#define M 10;
-
 int main(int argc, char **argv) {
-    int n = N;
-    int m = M;
-
-    int **array = create(n, m);
-
-    print_array(array, n, m);
-    printf("\n");
-
-    initialize(array, n, m);
-
-    while (operate(array, n, m));
+    int array[N][M];
+    print_array(array, N, M);
+    initialize(array, N, M);
+    while (operate(array, N, M));
 }
