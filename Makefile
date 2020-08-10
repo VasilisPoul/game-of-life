@@ -12,7 +12,7 @@ all: $(OBJS)
 main.o: main.c
 	$(CC) $(FLAGS) main.c 
 
-game_of_life.o: game_of_life.c
+game_of_life.o: serial/game_of_life.c
 	$(CC) $(FLAGS) game_of_life.c 
 
 

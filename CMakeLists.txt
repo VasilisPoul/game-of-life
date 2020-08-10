@@ -3,6 +3,6 @@ project(game_of_life C)
 
 set(CMAKE_C_STANDARD 11)
 
-include_directories(.)
+include_directories(/usr/include/mpi/)
 
-add_executable(game_of_life game_of_life.c main.c)
+add_executable(game_of_life mpi/game_of_life.c mpi/main.c)

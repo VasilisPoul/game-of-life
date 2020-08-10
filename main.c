@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "game_of_life.h"
+#include "serial/game_of_life.h"
 
 int main(int argc, char **argv) {
     int array[N][M];
