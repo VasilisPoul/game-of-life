@@ -1,13 +1,44 @@
 #include <mpi.h>
 #include <stdio.h>
-#include <math.h>
 #include <stdbool.h>
-
+#include <stdlib.h>
+#include <math.h>
 #include "game_of_life.h"
 
 #define STEPS 20
 
-#define DIM 2
+typedef struct Neighbors {
+    int up_left;
+    int up;
+    int up_right;
+    int right;
+    int down_right;
+    int down;
+    int down_left;
+    int left;
+} Neighbors;
+
+typedef struct GridInfo {
+    MPI_Comm gridComm;      // communicator for entire grid
+    Neighbors neighbors;    // neighbor processes
+    int gridRank;       // rank of current process in gridComm
+    int row;                // row of current process
+    int col;                // column of current process
+    int processes;          // total number of processes
+} GridInfo;
+
+void printGridInfo(GridInfo *grid) {
+    printf("\n");
+    printf("Process rank in Grid is %d\n", grid->gridRank);
+    printf("Number of Processes is %d\n", grid->processes);
+    printf("Grid Comm Identifier is %d\n", grid->gridComm);
+    printf("Current Process Coordinates are (%d, %d)\n", grid->row, grid->col);
+    printf("up neighbor: %d, down neighbor: %d\n", grid->neighbors.up, grid->neighbors.down);
+    printf("left neighbor: %d, right neighbor: %d\n", grid->neighbors.left, grid->neighbors.right);
+    printf("up left neighbor: %d, up right neighbor: %d\n", grid->neighbors.up_left, grid->neighbors.up_right);
+    printf("down left neighbor: %d, down right neighbor: %d\n", grid->neighbors.down_left, grid->neighbors.down_right);
+    printf("\n");
+}
 
 /**
  * Find nearest neighbors and save ranks on neighbors array:
@@ -20,73 +51,114 @@
     DOWN LEFT = 6
     LEFT = 7 !
 */
-void getNeighbors(MPI_Comm cartComm, int rank, int *neighbors) {
-    int x = 0, y = 0, coords[DIM];
-    MPI_Cart_coords(cartComm, rank, DIM, coords);
+void initNeighbors(GridInfo *grid) {
+    int x = 0, y = 0, coords[2];
+    MPI_Cart_coords(grid->gridComm, grid->gridRank, 2, coords);
     x = coords[0];
     y = coords[1];
 
     /* Find up & down neighbor */
-    MPI_Cart_shift(cartComm, 0, 1, &neighbors[1], &neighbors[5]);
+    MPI_Cart_shift(grid->gridComm, 0, 1, &grid->neighbors.up, &grid->neighbors.down);
 
     /* Find left & right neighbor */
-    MPI_Cart_shift(cartComm, 1, 1, &neighbors[7], &neighbors[3]);
+    MPI_Cart_shift(grid->gridComm, 1, 1, &grid->neighbors.left, &grid->neighbors.right);
 
     /* Find up left neighbor */
     coords[0] = x - 1;
     coords[1] = y - 1;
-    MPI_Cart_rank(cartComm, coords, &neighbors[0]);
+    MPI_Cart_rank(grid->gridComm, coords, &grid->neighbors.up_left);
 
     /* Find up right neighbor */
     coords[0] = x - 1;
     coords[1] = y + 1;
-    MPI_Cart_rank(cartComm, coords, &neighbors[2]);
+    MPI_Cart_rank(grid->gridComm, coords, &grid->neighbors.up_right);
 
     /* Find down left neighbor */
     coords[0] = x + 1;
     coords[1] = y - 1;
-    MPI_Cart_rank(cartComm, coords, &neighbors[6]);
+    MPI_Cart_rank(grid->gridComm, coords, &grid->neighbors.down_left);
 
     /* Find down right neighbor */
     coords[0] = x + 1;
     coords[1] = y + 1;
-    MPI_Cart_rank(cartComm, coords, &neighbors[4]);
+    MPI_Cart_rank(grid->gridComm, coords, &grid->neighbors.down_right);
+}
+
+int SetupGrid(GridInfo *grid) {
+    int flag = 0, worldRank = 0, dims[2] = {0, 0}, periods[2] = {true, true}, gridCoords[2];
+
+    // if MPI has not been initialized, abort procedure
+    MPI_Initialized(&flag);
+    if (flag == false)
+        return -1;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);
+    MPI_Comm_size(MPI_COMM_WORLD, &(grid->processes));
+
+    MPI_Dims_create(grid->processes, 2, dims);
+
+    // create communicator for the process grid
+    MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, true, &(grid->gridComm));
+
+    // retrieve the process rank in the grid Communicator
+    // and the process coordinates in the cartesian topology
+    MPI_Comm_rank(grid->gridComm, &(grid->gridRank));
+
+    MPI_Cart_coords(grid->gridComm, grid->gridRank, 2, gridCoords);
+    grid->row = gridCoords[0];
+    grid->col = gridCoords[1];
+
+    // Initialize neighbors
+    initNeighbors(grid);
+    return 0;
+}
+
+bool **Allocate2DMatrix(int rows, int columns) {
+    int counter;
+    bool **matrix;
+    matrix = (bool **) malloc(rows * sizeof(bool *));
+    if (!matrix)
+        return (NULL);
+    for (counter = 0; counter < rows; counter++) {
+        matrix[counter] = (bool *) malloc(columns * sizeof(bool));
+        if (!matrix[counter])
+            return (NULL);
+    }
+    return matrix;
+}
+
+void Free2DMatrix(bool **matrix, int rows) {
+    int counter;
+    for (counter = 0; counter < rows; counter++)
+        free((bool *) matrix[counter]);
+    free((bool **) matrix);
 }
 
 int main(int argc, char **argv) {
-    MPI_Comm grid;
-    int s, rank, cartRank, size, workers = 0, neighbors[8];
-    double startWtime, endwtime;
-    int array[N][M];
+    int rank = 0, size = 0, workers = 0;
+    double start_w_time = 0.0, end_w_time = 0.0;
+
+    GridInfo grid;
+
+    double **localA, **localB, **localC;
+    double **aMatrix, **bMatrix, **cMatrix;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    int dims[DIM] = {0, 0};
-    int periodic[DIM] = {true, true};
-    MPI_Dims_create(size, DIM, dims);
-    if (rank == 0)
-        printf("dims={%d, %d}\n", dims[0], dims[1]);
+    SetupGrid(&grid);
+
+    printf("World rank: %d, grid rank: %d, size: %d\n", rank, grid.gridRank, size);
+
+    if (rank == 0) {
+        printGridInfo(&grid);
+    }
 
 
-    MPI_Cart_create(MPI_COMM_WORLD, DIM, dims, periodic, true, &grid);
-    MPI_Comm_rank(grid, &cartRank);
+    MPI_Comm_free(&grid.gridComm);
+    MPI_Finalize();
 
-    printf("rank = %d\n", rank);
-    printf("cartRank = %d\n", cartRank);
-
-    getNeighbors(grid, cartRank, neighbors);
-
-    printf("UP: %d, DOWN: %d\n", neighbors[1], neighbors[5]);
-    printf("LEFT: %d, RIGHT: %d\n", neighbors[7], neighbors[3]);
-    printf("UP LEFT: %d, UP RIGHT: %d\n", neighbors[0], neighbors[2]);
-    printf("DOWN LEFT: %d, DOWN RIGHT: %d\n", neighbors[6], neighbors[4]);
-    printf("\n");
-
-
-
-    MPI_Comm_free(&grid);
 
     /*
      * workers = sqrt((double) size);
@@ -134,6 +206,4 @@ int main(int argc, char **argv) {
     ///
     //operate(array, N, M);
     ///
-
-    MPI_Finalize();
 }
