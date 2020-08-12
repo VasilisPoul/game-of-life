@@ -54,7 +54,7 @@ void getNeighbors(MPI_Comm cartComm, int rank, int *neighbors) {
 }
 
 int main(int argc, char **argv) {
-    MPI_Comm cartComm;
+    MPI_Comm grid;
     int s, rank, cartRank, size, workers = 0, neighbors[8];
     double startWtime, endwtime;
     int array[N][M];
@@ -70,19 +70,23 @@ int main(int argc, char **argv) {
         printf("dims={%d, %d}\n", dims[0], dims[1]);
 
 
-    MPI_Cart_create(MPI_COMM_WORLD, DIM, dims, periodic, true, &cartComm);
-    MPI_Comm_rank(cartComm, &cartRank);
+    MPI_Cart_create(MPI_COMM_WORLD, DIM, dims, periodic, true, &grid);
+    MPI_Comm_rank(grid, &cartRank);
 
     printf("rank = %d\n", rank);
     printf("cartRank = %d\n", cartRank);
 
-    getNeighbors(cartComm, cartRank, neighbors);
+    getNeighbors(grid, cartRank, neighbors);
 
     printf("UP: %d, DOWN: %d\n", neighbors[1], neighbors[5]);
     printf("LEFT: %d, RIGHT: %d\n", neighbors[7], neighbors[3]);
     printf("UP LEFT: %d, UP RIGHT: %d\n", neighbors[0], neighbors[2]);
     printf("DOWN LEFT: %d, DOWN RIGHT: %d\n", neighbors[6], neighbors[4]);
     printf("\n");
+
+
+
+    MPI_Comm_free(&grid);
 
     /*
      * workers = sqrt((double) size);

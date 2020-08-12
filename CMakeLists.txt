@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 project(game_of_life C)
 
-set(CMAKE_C_STANDARD 11)
+find_package(MPI REQUIRED)
+include_directories(${MPI_INCLUDE_PATH})
 
-include_directories(/usr/include/mpi/)
+SET(CMAKE_C_COMPILER mpicc)
+SET(CMAKE_CXX_COMPILER mpicxx)
 
-add_executable(game_of_life mpi/game_of_life.c mpi/main.c)
+set(SOURCE_FILES mpi/main.c)
+
+add_executable(game_of_life ${SOURCE_FILES})
+
+target_link_libraries(game_of_life m)
