@@ -1,15 +1,19 @@
 #ifndef __GAME_OF_LIFE_H__
 #define __GAME_OF_LIFE_H__
 
+#include <stdbool.h>
+
 #define N 10
 #define M 10
 
-int **create(int n, int m);
+bool **allocate2DArray(int rows, int columns);
 
-void initialize(int array[N][M], int n, int m);
+void Free2DArray(bool **array, int rows);
 
-void print_array(int array[N][M], int n, int m);
+void initialize(bool **array, int n, int m);
 
-int operate(int array[N][M], int n, int m);
+void print_array(bool **array, int n, int m);
+
+int operate(bool **array, int n, int m);
 
 #endif

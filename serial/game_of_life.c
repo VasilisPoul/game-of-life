@@ -1,24 +1,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
 #include "game_of_life.h"
 
 int mod(int x, int m) {
     return (x % m + m) % m;
 }
 
-void print_array(int array[N][M], int n, int m) {
+bool **allocate2DArray(int rows, int columns) {
+    int c;
+    bool **array;
+    array = (bool **) malloc(rows * sizeof(bool *));
+    if (!array)
+        return (NULL);
+    for (c = 0; c < rows; c++) {
+        array[c] = (bool *) malloc(columns * sizeof(bool));
+        if (!array[c])
+            return (NULL);
+    }
+    return array;
+}
+
+void Free2DArray(bool **array, int rows) {
+    int c;
+    for (c = 0; c < rows; c++)
+        free((bool *) array[c]);
+    free((bool **) array);
+}
+
+void print_array(bool **array, int n, int m) {
     printf("\n");
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
-            printf("%s ", array[i][j] ? "\u2B1B" : "\u2B1C");
+            printf("%s ", array[i][j] == true ? "\u2B1B" : "\u2B1C");
         }
         printf("\n");
     }
 }
 
-void initialize(int array[N][M], int n, int m) {
+void initialize(bool **array, int n, int m) {
     srand(time(NULL));
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
@@ -28,7 +48,7 @@ void initialize(int array[N][M], int n, int m) {
     print_array(array, n, m);
 }
 
-void copy(int target[N][M], int source[N][M], int n, int m) {
+void copy(bool **target, bool **source, int n, int m) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
             target[i][j] = source[i][j];
@@ -36,14 +56,13 @@ void copy(int target[N][M], int source[N][M], int n, int m) {
     }
 }
 
-int operate(int array[N][M], int n, int m) {
-    int old_array[N][M];
+int operate(bool **array, int n, int m) {
+    bool **old_array = allocate2DArray(N, M);
     int left = 0, right = 0;
     int up = 0, down = 0;
     int up_left = 0, up_right = 0;
     int down_left = 0, down_right = 0;
     int changes = 0;
-
     copy(old_array, array, n, m);
 
     for (int i = 0; i < n; i++) {
