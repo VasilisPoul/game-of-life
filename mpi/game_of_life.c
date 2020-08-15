@@ -29,14 +29,15 @@ int mod(int x, int m) {
     return (x % m + m) % m;
 }
 
-void print_array(bool **array, int n, int m) {
+void print_array(bool **array, int n, int m, int dimN, int dimM) {
     printf("\n");
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
-            printf("%s ", array[i][j] == true ? "\u2B1B" : "\u2B1C");
+            printf("%s %c", array[i][j] == true ? "\u2B1B" : "\u2B1C", ((j + 1) % dimM == 0) ? '\t' : '\0');
         }
-        printf("\n");
+        printf("\n%c", ((i + 1) % dimN == 0) ? '\n' : '\0');
     }
+    printf("\n");
 }
 
 void initialize_array(bool **array, int n, int m) {
