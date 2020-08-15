@@ -11,6 +11,8 @@ int main(int argc, char **argv) {
     double start_w_time = 0.0, end_w_time = 0.0;
     bool **state = NULL, **localOldState = NULL, **localState = NULL;
     MPI_Datatype colType, rowType;
+    MPI_Request request[16];
+    MPI_Status status[16];
     GridInfo grid;
 
     MPI_Init(&argc, &argv);
@@ -45,7 +47,7 @@ int main(int argc, char **argv) {
     MPI_Type_commit(&rowType);
 
     //colType
-    MPI_Type_vector(grid.dimN, 1, grid.dimM, MPI_DOUBLE, &colType);
+    MPI_Type_vector(grid.dimN, 1, grid.dimM, MPI_CXX_BOOL, &colType);
     MPI_Type_commit(&colType);
 
     scatter2DArray(state, localState, root, &grid);
@@ -59,10 +61,33 @@ int main(int argc, char **argv) {
     // Start MPI_Wtime
     start_w_time = MPI_Wtime();
 
+    MPI_Send_init(&localState[1][1], 1, rowType, grid.neighbors.up, UP, grid.gridComm, &request[0]);
+    MPI_Send_init(&localState[grid.dimN - 2][1], 1, rowType, grid.neighbors.down, DOWN, grid.gridComm, &request[1]);
+    MPI_Send_init(&localState[1][grid.dimM - 2], 1, colType, grid.neighbors.right, RIGHT, grid.gridComm, &request[2]);
+    MPI_Send_init(&localState[1][1], 1, colType, grid.neighbors.left, LEFT,  grid.gridComm, &request[3]);
+
+    MPI_Send_init(&localState[1][grid.dimM - 2], 1, MPI_CXX_BOOL,  grid.neighbors.up_right, UP_RIGHT, grid.gridComm, &request[4]);
+    MPI_Send_init(&localState[1][1], 1, MPI_CXX_BOOL, grid.neighbors.up_left, UP_LEFT,  grid.gridComm, &request[5]);
+    MPI_Send_init(&localState[grid.dimN - 2][grid.dimM - 2], 1, MPI_CXX_BOOL, grid.neighbors.down_right, DOWN_RIGHT, grid.gridComm, &request[6]);
+    MPI_Send_init(&localState[grid.dimN - 2][1], 1, MPI_CXX_BOOL, grid.neighbors.down_left, DOWN_LEFT, grid.gridComm, &request[7]);
+
+    MPI_Recv_init(&localState[grid.dimN - 1][1], 1, rowType, grid.neighbors.down, DOWN, grid.gridComm, &request[8]);
+    MPI_Recv_init(&localState[0][1], 1, rowType, grid.neighbors.up, UP, grid.gridComm, &request[9]);
+    MPI_Recv_init(&localState[1][0], 1, colType, grid.neighbors.left, LEFT, grid.gridComm, &request[10]);
+    MPI_Recv_init(&localState[1][grid.dimM - 1], 1, colType, grid.neighbors.right, RIGHT, grid.gridComm, &request[11]);
+
+    MPI_Recv_init(&localState[grid.dimN - 1][0], 1, MPI_CXX_BOOL, grid.neighbors.down_left, DOWN_LEFT, grid.gridComm, &request[12]);
+    MPI_Recv_init(&localState[grid.dimN - 1][grid.dimM - 1], 1, MPI_CXX_BOOL, grid.neighbors.down_right, DOWN_RIGHT, grid.gridComm, &request[13]);
+    MPI_Recv_init(&localState[0][0], 1, MPI_CXX_BOOL, grid.neighbors.up_left, UP_LEFT, grid.gridComm, &request[14]);
+    MPI_Recv_init(&localState[0][grid.dimM - 1], 1, MPI_CXX_BOOL, grid.neighbors.up_right, UP_RIGHT, grid.gridComm, &request[15]);
+
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     for (s = 0; s < STEPS; s++) { //For #επαναλήψεων (σταθερός σε όλες τις μετρήσεις σας)
+        MPI_Startall(16, request);
         //Irecv(RRequest) //X 8(Β, Ν, Δ, Α + γωνιακά)
+
 //        Isend (SRequest) X 8 (Β,Ν,Δ,Α + γωνιακά)
 //        Υπολογισμός εσωτερικών στοιχείων «μετά» (άσπρα στοιχεία στο σχήμα) και
 //        ένδειξη κενού πίνακα ή μη αλλαγής (διπλό for)

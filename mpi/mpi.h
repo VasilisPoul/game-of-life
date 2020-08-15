@@ -4,6 +4,15 @@
 #include <mpi.h>
 #include <stdbool.h>
 
+#define UP_LEFT 0
+#define UP 1
+#define UP_RIGHT 2
+#define RIGHT 3
+#define DOWN_RIGHT 4
+#define DOWN 5
+#define DOWN_LEFT 6
+#define LEFT 7
+
 typedef struct neighbors {
     int up_left;
     int up;
