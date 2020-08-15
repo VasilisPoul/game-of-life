@@ -44,7 +44,7 @@ void initialize_array(bool **array, int n, int m) {
     srand(time(NULL));
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
-            array[i][j] = (bool)( rand() % 2);
+            array[i][j] = (bool) (rand() % 2);
         }
     }
 }
@@ -95,8 +95,6 @@ int operate(bool **array, int n, int m) {
             }
         }
     }
-    print_array(array, n, m);
-
     Free2DArray(old_array, TABLE_N);
 
     return changes;

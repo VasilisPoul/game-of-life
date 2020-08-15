@@ -2,6 +2,7 @@
 #define __MPI_H__
 
 #include <mpi.h>
+#include <stdbool.h>
 
 typedef struct neighbors {
     int up_left;
@@ -24,8 +25,8 @@ typedef struct gridInfo {
     int processes;          // total number of processes
     int M;                  // N
     int N;                  // M
-    int localM;             // local M
-    int localN;             // local N
+    int dimM;               // local M dimension
+    int dimN;               // local N dimension
 } GridInfo;
 
 void printGridInfo(GridInfo *grid);
@@ -43,6 +44,10 @@ void printGridInfo(GridInfo *grid);
 */
 void initNeighbors(GridInfo *grid);
 
-int setupGrid(GridInfo *grid, int M, int N);
+int setupGrid(GridInfo *grid, int N, int M);
+
+int scatter2DArray(bool **array, bool **local, int root, GridInfo *grid);
+
+int gather2DArray(bool **array, bool **local, int root, GridInfo *grid);
 
 #endif

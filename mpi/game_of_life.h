@@ -12,7 +12,7 @@ int **create(int n, int m);
 
 void initialize_array(bool **array, int n, int m);
 
-void print_array(bool **array, int n, int m);
+void print_array(bool **array, int n, int m, int dimN, int dimM);
 
 int operate(bool **array, int n, int m);
 

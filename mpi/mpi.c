@@ -1,21 +1,26 @@
 #include "mpi.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <math.h>
 
-
+/**
+ * Print grid info
+*/
 void printGridInfo(GridInfo *grid) {
-    printf("\n");
+    printf("\n------------------------------\n");
     printf("Grid rank: %d\n", grid->gridRank);
     printf("Grid dimensions: (%d,%d)\n", grid->dims[0], grid->dims[1]);
     printf("Number of Processes is %d\n", grid->processes);
     printf("Grid Comm Identifier is %d\n", grid->gridComm);
     printf("Current Process Coordinates are (%d, %d)\n", grid->row, grid->col);
+    printf("Array dimensions: (%d, %d)\n", grid->N, grid->M);
+    printf("Local array dimensions: (%d, %d)\n", grid->dimN, grid->dimM);
     printf("up neighbor: %d, down neighbor: %d\n", grid->neighbors.up, grid->neighbors.down);
     printf("left neighbor: %d, right neighbor: %d\n", grid->neighbors.left, grid->neighbors.right);
     printf("up left neighbor: %d, up right neighbor: %d\n", grid->neighbors.up_left, grid->neighbors.up_right);
     printf("down left neighbor: %d, down right neighbor: %d\n", grid->neighbors.down_left, grid->neighbors.down_right);
-    printf("\n");
+    printf("------------------------------\n");
 }
 
 /**
@@ -62,7 +67,10 @@ void initNeighbors(GridInfo *grid) {
     MPI_Cart_rank(grid->gridComm, coords, &grid->neighbors.down_right);
 }
 
-int setupGrid(GridInfo *grid, int M, int N) {
+/**
+ * Setup grid object
+*/
+int setupGrid(GridInfo *grid, int N, int M) {
     int flag = 0, worldRank = 0, periods[2] = {true, true}, gridCoords[2];
 
     // if MPI has not been initialized, abort procedure
@@ -73,6 +81,7 @@ int setupGrid(GridInfo *grid, int M, int N) {
     MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);
     MPI_Comm_size(MPI_COMM_WORLD, &(grid->processes));
 
+    // Cartesian dimensions
     grid->dims[0] = grid->dims[1] = (int) sqrt(grid->processes);
 
     //MPI_Dims_create(grid->processes, 2, grid->dims);
@@ -88,13 +97,125 @@ int setupGrid(GridInfo *grid, int M, int N) {
     grid->row = gridCoords[0];
     grid->col = gridCoords[1];
 
-    grid->M = M;
     grid->N = N;
+    grid->M = M;
 
-    grid->localM = M / (int) sqrt(grid->processes) + 2;
-    grid->localN = N / (int) sqrt(grid->processes) + 2;
+    // Local array dimensions
+    grid->dimM = M / (int) sqrt(grid->processes);
+    grid->dimN = N / (int) sqrt(grid->processes);
 
     // Initialize neighbors
     initNeighbors(grid);
     return 0;
+}
+
+/**
+ * Scatter 2D array
+*/
+int scatter2DArray(bool **array, bool **local, int root, GridInfo *grid) {
+    int flag, rank, loops = grid->N / grid->dimN;
+    int size, dest, packPosition;
+    int counter, index, coords[2], i, j;
+    bool *tempArray;
+    MPI_Status status;
+
+    MPI_Initialized(&flag);
+    if (flag == false) return (-1);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if ((root < 0) || (root >= size)) return (-1);
+
+    tempArray = (bool *) malloc(grid->dimN * grid->dimN * sizeof(bool));
+    if (!tempArray) return (-1);
+
+    if (rank == root) {
+        for (counter = 0; counter < loops; counter++) {
+            coords[0] = counter;
+            for (index = 0; index < loops; index++) {
+                coords[1] = index;
+                MPI_Cart_rank(grid->gridComm, coords, &dest);
+                packPosition = 0;
+                for (i = grid->dimN * counter; i < grid->dimN * (counter + 1); i++) {
+                    for (j = grid->dimN * index; j < grid->dimN * (index + 1); j++) {
+                        MPI_Pack(&array[i][j], 1, MPI_CXX_BOOL, tempArray, 256, &packPosition, grid->gridComm);
+                    }
+                }
+                if (dest != root) {
+                    MPI_Send(tempArray, grid->dimN * grid->dimN, MPI_CXX_BOOL, dest, 0, grid->gridComm);
+                } else {
+                    for (i = 0; i < grid->dimN; i++)
+                        for (j = 0; j < grid->dimN; j++)
+                            local[i][j] = tempArray[i * grid->dimN + j];
+                }
+            }
+        }
+    } else {
+        MPI_Recv(tempArray, grid->dimN * grid->dimN, MPI_CXX_BOOL, root, 0, grid->gridComm, &status);
+        for (counter = 0; counter < grid->dimN; counter++)
+            for (index = 0; index < grid->dimN; index++)
+                local[counter][index] = tempArray[counter * grid->dimN + index];
+    }
+    free(tempArray);
+    return (0);
+}
+
+/**
+ * Gather 2D array
+*/
+int gather2DArray(bool **array, bool **local, int root, GridInfo *grid) {
+    int flag, rank, loops = grid->N / grid->dimN;
+    int size, cnt, source, rootCoords[2];
+    int counter, index, coords[2], i, j;
+    bool *tempArray;
+    MPI_Status status;
+    MPI_Initialized(&flag);
+    if (flag == false) return (-1);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if ((root < 0) || (root >= size)) return (-1);
+
+    tempArray = (bool *) malloc(grid->dimN * grid->dimN * sizeof(bool));
+    if (!tempArray) return (-1);
+    if (rank == root) {
+        for (counter = 0; counter < loops; counter++) {
+            coords[0] = counter;
+            for (index = 0; index < loops; index++) {
+                coords[1] = index;
+                MPI_Cart_rank(grid->gridComm, coords, &source);
+                if (source == root) {
+                    MPI_Cart_coords(grid->gridComm, rank, 2, rootCoords);
+                    for (i = grid->dimN * rootCoords[0];
+                         i < grid->dimN * (rootCoords[0] + 1); i++) {
+                        for (j = grid->dimN * rootCoords[1];
+                             j < grid->dimN * (rootCoords[1] + 1); j++) {
+                            array[i][j] = local[i][j];
+                        }
+                    }
+                } else {
+                    MPI_Recv(tempArray, grid->dimN * grid->dimN, MPI_CXX_BOOL, source, 0, grid->gridComm, &status);
+                    cnt = 0;
+                    for (i = grid->dimN * counter; i < grid->dimN * (counter + 1); i++) {
+                        for (j = grid->dimN * index; j < grid->dimN * (index + 1); j++) {
+                            array[i][j] = tempArray[cnt];
+                            cnt++;
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        cnt = 0;
+        for (i = 0; i < grid->dimN; i++)
+            for (j = 0; j < grid->dimN; j++) {
+                tempArray[cnt] = local[i][j];
+                cnt++;
+            }
+        MPI_Send(tempArray, grid->dimN * grid->dimN, MPI_CXX_BOOL, root, 0, grid->gridComm);
+    }
+    free(tempArray);
+    return (0);
 }

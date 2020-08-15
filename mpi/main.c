@@ -1,19 +1,16 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include "mpi.h"
-#include <math.h>
-#include <time.h>
 #include "game_of_life.h"
 
 #define STEPS 20
 
 int main(int argc, char **argv) {
     GridInfo grid;
-    int i = 0, j = 0, rank = 0, size = 0, workers = 0;
+    int i = 0, j = 0, rank, size = 0, workers = 0, root = 0;
     double start_w_time = 0.0, end_w_time = 0.0;
-    bool **state = NULL, **localPrevious = NULL, **localNext = NULL;
+    bool **state = NULL, **localOldState = NULL, **localState = NULL;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -24,30 +21,31 @@ int main(int argc, char **argv) {
 
     printf("World rank: %d, grid rank: %d, size: %d\n", rank, grid.gridRank, size);
 
-    if (rank == 0) {
+    if (rank == root) {
         printGridInfo(&grid);
         state = allocate2DArray(grid.N, grid.M);
         initialize_array(state, grid.N, grid.M);
-        print_array(state, grid.N, grid.M);
+        printf("state:\n");
+        print_array(state, grid.N, grid.M, grid.dimN, grid.dimM);
     }
 
-    localPrevious = allocate2DArray(grid.localN, grid.localM);
-    localNext = allocate2DArray(grid.localN, grid.localM);
+    localOldState = allocate2DArray(grid.dimN + 2, grid.dimM + 2);
+    localState = allocate2DArray(grid.dimN + 2, grid.dimM + 2);
 
-    for (i = 0; i < grid.localN; i++) {
-        for (j = 0; j < grid.localM; j++) {
-            localPrevious[i][j] = 0;
-            localNext[i][j] = 0;
+    for (i = 0; i < grid.dimN + 2; i++) {
+        for (j = 0; j < grid.dimM + 2; j++) {
+            localOldState[i][j] = 0;
+            localState[i][j] = 0;
         }
     }
 
-    print_array(localPrevious, grid.localN, grid.localM);
+    scatter2DArray(state, localState, root, &grid);
 
+    printf("localState:\n");
+    print_array(localState, grid.dimN, grid.dimM, grid.dimN, grid.dimM);
 
-    //MPI_Scatter()
+    MPI_Barrier(grid.gridComm); //(συγχρονισμός διεργασιών πριν τις μετρήσεις)
 
-
-//    * MPI_Barrier (συγχρονισμός διεργασιών πριν τις μετρήσεις)
 //    Start MPI_Wtime
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /*
@@ -69,7 +67,14 @@ int main(int argc, char **argv) {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //End MPI_Wtime
 
+    gather2DArray(state, localState, root, &grid);
 
-    MPI_Comm_free(&grid.gridComm);
+
+    if (rank == root) {
+        printf("state:\n");
+        print_array(state, grid.N, grid.M, grid.dimN, grid.dimM);
+    }
+
+    //MPI_Comm_free(&grid.gridComm);
     MPI_Finalize();
 }
