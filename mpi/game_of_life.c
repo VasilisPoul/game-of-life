@@ -4,6 +4,20 @@
 #include <stdbool.h>
 #include "game_of_life.h"
 
+/*COLOR*/
+#define GRAY  "\x1B[90m"
+#define RED  "\x1B[31m"
+#define GREEN  "\x1B[32m"
+
+/*BOLD-UNDERLINE-COLOR*/
+#define B_U_GRAY  "\x1B[1m\x1B[4m\x1B[90m"
+#define B_U_RED  "\x1B[1m\x1B[4m\x1B[31m"
+#define B_U_GREEN  "\x1B[1m\x1B[4m\x1B[32m"
+
+/*RESET COLOR*/
+#define RESET  "\x1B[0m"
+
+
 bool **allocate2DArray(int rows, int columns) {
     int c;
     bool **array;
