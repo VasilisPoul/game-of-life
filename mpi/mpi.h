@@ -52,6 +52,10 @@ void initNeighbors(GridInfo *grid);
 
 int setupGrid(GridInfo *grid, int N, int M);
 
+void sendInit(bool **block, GridInfo grid, MPI_Datatype rowType, MPI_Datatype colType, MPI_Request *req);
+
+void recvInit(bool **block, GridInfo grid, MPI_Datatype rowType, MPI_Datatype colType, MPI_Request *req);
+
 int scatter2DArray(bool **array, bool **local, int root, GridInfo *grid);
 
 int gather2DArray(bool **array, bool **local, int root, GridInfo *grid);

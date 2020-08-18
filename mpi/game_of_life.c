@@ -5,29 +5,23 @@
 #include "game_of_life.h"
 
 /*COLOR*/
-#define GRAY  "\x1B[90m"
 #define RED  "\x1B[31m"
-#define GREEN  "\x1B[32m"
 
-/*BOLD-UNDERLINE-COLOR*/
-#define B_U_GRAY  "\x1B[1m\x1B[4m\x1B[90m"
-#define B_U_RED  "\x1B[1m\x1B[4m\x1B[31m"
-#define B_U_GREEN  "\x1B[1m\x1B[4m\x1B[32m"
+/*BOLD-COLOR*/
+#define B_RED  "\x1B[1m\x1B[4m\x1B[31m"
+#define B_GREEN  "\x1B[1m\x1B[32m"
 
 /*RESET COLOR*/
 #define RESET  "\x1B[0m"
 
 
 bool **allocate2DArray(int rows, int columns) {
-    int c;
     bool **array;
-    array = (bool **) malloc(rows * sizeof(bool *));
-    if (!array)
-        return (NULL);
-    for (c = 0; c < rows; c++) {
-        array[c] = (bool *) malloc(columns * sizeof(bool));
-        if (!array[c])
-            return (NULL);
+    int i = 0;
+    array = malloc(rows * sizeof(bool *));
+    array[0] = malloc(rows * columns * sizeof(bool));
+    for (i = 1; i < rows; i++) {
+        array[i] = &(array[0][i * rows]);
     }
     return array;
 }
@@ -43,13 +37,20 @@ int mod(int x, int m) {
     return (x % m + m) % m;
 }
 
-void print_array(bool **array, int n, int m, int dimN, int dimM) {
+void print_array(bool **array, int rowDim, int colDim, int localRowDim, int localColDim) {
     printf("\n");
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            printf("%s %c", array[i][j] == true ? "\u2B1B" : "\u2B1C", ((j + 1) % dimM == 0) ? '\t' : '\0');
+    for (int i = 0; i < rowDim; i++) {
+        for (int j = 0; j < colDim; j++) {
+
+            if ((rowDim != localRowDim && colDim != localColDim) || (i > 0 && i < localRowDim - 1) && (j > 0 && j < localColDim - 1)) {
+                printf("%s %c", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C", ((j + 1) % localColDim == 0) ? '\t' : '\0');
+            } else {
+                printf("%s %c", array[i][j] == true ? B_GREEN"\u2B1B"RESET : "\u2B1C",
+                       ((j + 1) % localColDim == 0) ? '\t' : '\0');
+            }
+
         }
-        printf("\n%c", ((i + 1) % dimN == 0) ? '\n' : '\0');
+        printf("\n%c", ((i + 1) % localRowDim == 0) ? '\n' : '\0');
     }
     printf("\n");
 }

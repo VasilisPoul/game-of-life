@@ -5,10 +5,16 @@
 #include <math.h>
 
 /*COLOR*/
-#define B_U_GREEN  "\x1B[1m\x1B[32m"
+#define RED  "\x1B[31m"
+#define GREEN  "\x1B[32m"
+
+/*BOLD-COLOR*/
+#define B_RED  "\x1B[1m\x1B[31m"
+#define B_GREEN  "\x1B[1m\x1B[32m"
 
 /*RESET COLOR*/
 #define RESET  "\x1B[0m"
+
 
 /**
  * Print grid info
@@ -20,11 +26,11 @@ void printGridInfo(GridInfo *grid) {
     printf("Process coordinates: (%d, %d)\n", grid->gridCoords[0], grid->gridCoords[1]);
     printf("Block dimensions: (%d, %d)\n", grid->blockDims[0], grid->blockDims[1]);
     printf("Local block dimensions: (%d, %d)\n", grid->localBlockDims[0], grid->localBlockDims[1]);
-    printf(" %2.2d   %2.2d    %2.2d \n", grid->neighbors.up_left, grid->neighbors.up, grid->neighbors.up_right);
+    printf(B_GREEN" %2.2d   %2.2d    %2.2d \n"RESET, grid->neighbors.up_left, grid->neighbors.up, grid->neighbors.up_right);
     printf("   ↖   ↑   ↗\n");
-    printf("%2.2d ←  "B_U_GREEN"%2.2d"RESET"   → %2.2d\n", grid->neighbors.left, grid->gridRank, grid->neighbors.right);
+    printf(B_GREEN"%2.2d"RESET" ←  "B_RED"%2.2d"RESET"   → "B_GREEN"%2.2d\n"RESET, grid->neighbors.left, grid->gridRank, grid->neighbors.right);
     printf("   ↙   ↓   ↘\n");
-    printf(" %2.2d   %2.2d    %2.2d\n", grid->neighbors.down_left, grid->neighbors.down, grid->neighbors.down_right);
+    printf(B_GREEN" %2.2d   %2.2d    %2.2d\n"RESET, grid->neighbors.down_left, grid->neighbors.down, grid->neighbors.down_right);
 }
 
 /**
@@ -109,6 +115,44 @@ int setupGrid(GridInfo *grid, int N, int M) {
     // Initialize neighbors
     initNeighbors(grid);
     return 0;
+}
+
+/**
+ * Send requests initialization
+*/
+void sendInit(bool **block, GridInfo grid, MPI_Datatype rowType, MPI_Datatype colType, MPI_Request *req) {
+    MPI_Send_init(&block[grid.localBlockDims[0]][1], 1, rowType, grid.neighbors.down, UP, grid.gridComm,
+                  &req[0]);
+    MPI_Send_init(&block[1][1], 1, rowType, grid.neighbors.up, DOWN, grid.gridComm, &req[1]);
+    MPI_Send_init(&block[1][1], 1, colType, grid.neighbors.left, RIGHT, grid.gridComm, &req[2]);
+    MPI_Send_init(&block[1][grid.localBlockDims[1]], 1, colType, grid.neighbors.right, LEFT, grid.gridComm,
+                  &req[3]);
+    MPI_Send_init(&block[grid.localBlockDims[0]][grid.localBlockDims[1]], 1, MPI_CXX_BOOL,
+                  grid.neighbors.down_right, UP_LEFT, grid.gridComm, &req[4]);
+    MPI_Send_init(&block[grid.localBlockDims[0]][1], 1, MPI_CXX_BOOL, grid.neighbors.down_left, UP_RIGHT,
+                  grid.gridComm, &req[5]);
+    MPI_Send_init(&block[1][1], 1, MPI_CXX_BOOL, grid.neighbors.up_left, DOWN_RIGHT, grid.gridComm, &req[6]);
+    MPI_Send_init(&block[1][grid.localBlockDims[1]], 1, MPI_CXX_BOOL, grid.neighbors.up_right, DOWN_LEFT,
+                  grid.gridComm, &req[7]);
+}
+
+/**
+ * Recieve requests initialization
+*/
+void recvInit(bool **block, GridInfo grid, MPI_Datatype rowType, MPI_Datatype colType, MPI_Request *req) {
+    MPI_Recv_init(&block[0][1], 1, rowType, grid.neighbors.up, UP, grid.gridComm, &req[0]);
+    MPI_Recv_init(&block[grid.localBlockDims[0] + 1][1], 1, rowType, grid.neighbors.down, DOWN, grid.gridComm,
+                  &req[1]);
+    MPI_Recv_init(&block[1][grid.localBlockDims[1] + 1], 1, colType, grid.neighbors.right, RIGHT, grid.gridComm,
+                  &req[2]);
+    MPI_Recv_init(&block[1][0], 1, colType, grid.neighbors.left, LEFT, grid.gridComm, &req[3]);
+    MPI_Recv_init(&block[0][0], 1, MPI_CXX_BOOL, grid.neighbors.up_left, UP_LEFT, grid.gridComm, &req[4]);
+    MPI_Recv_init(&block[0][grid.localBlockDims[1] + 1], 1, MPI_CXX_BOOL, grid.neighbors.up_right, UP_RIGHT,
+                  grid.gridComm, &req[5]);
+    MPI_Recv_init(&block[grid.localBlockDims[0] + 1][grid.localBlockDims[1] + 1], 1, MPI_CXX_BOOL,
+                  grid.neighbors.down_right, DOWN_RIGHT, grid.gridComm, &req[6]);
+    MPI_Recv_init(&block[grid.localBlockDims[0] + 1][0], 1, MPI_CXX_BOOL, grid.neighbors.down_left, DOWN_LEFT,
+                  grid.gridComm, &req[7]);
 }
 
 /**
