@@ -27,15 +27,12 @@ typedef struct neighbors {
 typedef struct gridInfo {
     MPI_Comm gridComm;      // communicator for entire grid
     Neighbors neighbors;    // neighbor processes
-    int gridRank;           // rank of current process in gridComm
-    int dims[2];            // grid dimensions
-    int row;                // row of current process
-    int col;                // column of current process
     int processes;          // total number of processes
-    int M;                  // N
-    int N;                  // M
-    int dimM;               // local M dimension
-    int dimN;               // local N dimension
+    int gridRank;           // rank of current process in gridComm
+    int gridDims[2];        // grid dimensions
+    int gridCoords[2];      // grid dimensions
+    int blockDims[2];       // block dimensions
+    int localBlockDims[2];  // local block dimensions
 } GridInfo;
 
 void printGridInfo(GridInfo *grid);
