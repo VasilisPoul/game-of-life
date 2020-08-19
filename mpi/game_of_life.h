@@ -1,8 +1,8 @@
 #ifndef __GAME_OF_LIFE_H__
 #define __GAME_OF_LIFE_H__
 
-#define TABLE_N 16
-#define TABLE_M 16
+#define TABLE_N 12
+#define TABLE_M 12
 
 bool **allocate2DArray(int rows, int columns);
 

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="mpirun" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-np 16 $PROJECT_DIR$/cmake-build-debug/game_of_life" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="game_of_life" TARGET_NAME="game_of_life" CONFIG_NAME="Debug" RUN_PATH="/usr/bin/mpirun">
+  <configuration default="false" name="mpirun" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-np 4 $PROJECT_DIR$/cmake-build-debug/game_of_life" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="game_of_life" TARGET_NAME="game_of_life" CONFIG_NAME="Debug" RUN_PATH="/usr/bin/mpirun">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>
