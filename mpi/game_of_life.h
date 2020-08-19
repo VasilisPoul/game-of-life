@@ -12,7 +12,7 @@ int **create(int n, int m);
 
 void initialize_array(bool **array, int n, int m);
 
-void print_array(bool **array, int rowDim, int colDim, int localRowDim, int localColDim);
+void print_array(bool **array, bool split, bool internals, int rowDim, int colDim, int localRowDim, int localColDim);
 
 void calculate(bool **a, bool **b, int i, int j, int *changes);
 

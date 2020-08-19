@@ -28,7 +28,8 @@ int main(int argc, char **argv) {
         block = allocate2DArray(grid.blockDims[0], grid.blockDims[1]);
         initialize_array(block, grid.blockDims[0], grid.blockDims[1]);
         printf("block:\n");
-        print_array(block, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0], grid.localBlockDims[1]);
+        print_array(block, true, true, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0],
+                    grid.localBlockDims[1]);
     }
 
     a = allocate2DArray(grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2);
@@ -177,7 +178,8 @@ int main(int argc, char **argv) {
 
     if (rank == root) {
         printf("block:\n");
-        print_array(block, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0], grid.localBlockDims[1]);
+        print_array(block, false, true, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0],
+                    grid.localBlockDims[1]);
         printf("Max time: %f\n", max_time);
         free2DArray(block, grid.blockDims[0]);
     }
