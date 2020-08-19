@@ -4,7 +4,7 @@
 #include "mpi.h"
 #include "game_of_life.h"
 
-#define STEPS 6
+#define STEPS 2
 
 int main(int argc, char **argv) {
     int s = 0, i = 0, j = 0, rank, size = 0, workers = 0, root = 0, alive = 0, stepAlive = 0, stepChanges = 0, stepLocalChanges = 0, sum = 0;
@@ -93,6 +93,13 @@ int main(int argc, char **argv) {
             MPI_Waitall(8, recv_b_request, recv_b_status);
         }
 
+        // Wait(SRequest) X 8 (Β,Ν,Δ,Α+γωνιακά) ή WaitAll (array of SRequests)
+        if (s % 2 == 0) {
+            MPI_Waitall(8, send_a_request, send_a_status);
+        } else {
+            MPI_Waitall(8, send_b_request, send_b_status);
+        }
+
         // Υπολογισμός εξωτερικών στοιχείων «μετά» (πράσινα στο σχήμα)-4 for
         // Up row
         for (j = 1; j < grid.localBlockDims[1] + 1; j++) {
@@ -138,22 +145,17 @@ int main(int argc, char **argv) {
         // (reduce για έλεγχο εδώ)
         if (s % 10 == 0) {
             MPI_Allreduce(&stepLocalChanges, &stepChanges, 1, MPI_INT, MPI_SUM, grid.gridComm);
-            printf("step: %d, rank: %d, stepLocalChanges: %d, stepChanges: %d\n", s,
-                   grid.gridRank, stepLocalChanges, stepChanges);
             if (stepChanges == 0) {
+                printf("step: %d, rank: %d, stepLocalChanges: %d, stepChanges: %d\n", s,
+                       grid.gridRank, stepLocalChanges, stepChanges);
                 break;
             }
         }
 
-        if (s % 2 == 0) {
-            // Wait(SRequest) X 8 (Β,Ν,Δ,Α+γωνιακά) ή WaitAll (array of SRequests)
-            MPI_Waitall(8, send_a_request, send_a_status);
-
-        } else {
-            // Wait(SRequest) X 8 (Β,Ν,Δ,Α+γωνιακά) ή WaitAll (array of SRequests)
-            MPI_Waitall(8, send_b_request, send_b_status);
-
-        }
+        // Πριν Πίνακας = Μετά Πίνακας SWAP
+        c = a;
+        a = b;
+        b = c;
 
     }
 
@@ -177,4 +179,11 @@ int main(int argc, char **argv) {
 
     //MPI_Comm_free(&grid.gridComm);
     MPI_Finalize();
+
+    free2DArray(a, grid.localBlockDims[0] + 2);
+    free2DArray(b, grid.localBlockDims[0] + 2);
+
+    if (rank == root) {
+        free2DArray(block, grid.blockDims[0]);
+    }
 }

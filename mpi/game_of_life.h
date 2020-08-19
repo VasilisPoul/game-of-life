@@ -6,7 +6,7 @@
 
 bool **allocate2DArray(int rows, int columns);
 
-void Free2DArray(bool **array, int rows);
+void free2DArray(bool **array, int rows);
 
 int **create(int n, int m);
 

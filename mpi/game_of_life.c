@@ -27,11 +27,9 @@ bool **allocate2DArray(int rows, int columns) {
     return array;
 }
 
-void Free2DArray(bool **array, int rows) {
-    int c;
-    for (c = 0; c < rows; c++)
-        free((bool *) array[c]);
-    free((bool **) array);
+void free2DArray(bool **array, int rows) {
+    free(array[0]);
+    free(array);
 }
 
 int mod(int x, int m) {
@@ -137,7 +135,7 @@ int operate(bool **array, int n, int m) {
             }
         }
     }
-    Free2DArray(old_array, TABLE_N);
+    free2DArray(old_array, TABLE_N);
 
     return changes;
 }
