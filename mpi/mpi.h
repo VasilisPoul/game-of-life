@@ -33,6 +33,8 @@ typedef struct gridInfo {
     int gridCoords[2];      // grid dimensions
     int blockDims[2];       // block dimensions
     int localBlockDims[2];  // local block dimensions
+    int stepGlobalChanges;
+    int stepLocalChanges;
 } GridInfo;
 
 void printGridInfo(GridInfo *grid);
@@ -59,5 +61,7 @@ void recvInit(bool **block, GridInfo grid, MPI_Datatype rowType, MPI_Datatype co
 int scatter2DArray(bool **array, bool **local, int root, GridInfo *grid);
 
 int gather2DArray(bool **array, bool **local, int root, GridInfo *grid);
+
+void print_step(int step, GridInfo *grid, bool **block_a, bool **block_b);
 
 #endif

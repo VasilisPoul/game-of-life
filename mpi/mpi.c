@@ -1,4 +1,5 @@
 #include "mpi.h"
+#include "game_of_life.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -25,11 +26,14 @@ void printGridInfo(GridInfo *grid) {
     printf("Block dimensions: (%d, %d)\n", grid->blockDims[0], grid->blockDims[1]);
     printf("Local block dimensions: (%d, %d)\n", grid->localBlockDims[0], grid->localBlockDims[1]);
     printf("Neighbors:\n");
-    printf(B_GREEN" %2.2d   %2.2d    %2.2d \n"RESET, grid->neighbors.up_left, grid->neighbors.up, grid->neighbors.up_right);
+    printf(B_GREEN" %2.2d   %2.2d    %2.2d \n"RESET, grid->neighbors.up_left, grid->neighbors.up,
+           grid->neighbors.up_right);
     printf("   ↖   ↑   ↗\n");
-    printf(B_GREEN"%2.2d"RESET" ←  "B_RED"%2.2d"RESET"   → "B_GREEN"%2.2d\n"RESET, grid->neighbors.left, grid->gridRank, grid->neighbors.right);
+    printf(B_GREEN"%2.2d"RESET" ←  "B_RED"%2.2d"RESET"   → "B_GREEN"%2.2d\n"RESET, grid->neighbors.left, grid->gridRank,
+           grid->neighbors.right);
     printf("   ↙   ↓   ↘\n");
-    printf(B_GREEN" %2.2d   %2.2d    %2.2d\n"RESET, grid->neighbors.down_left, grid->neighbors.down, grid->neighbors.down_right);
+    printf(B_GREEN" %2.2d   %2.2d    %2.2d\n"RESET, grid->neighbors.down_left, grid->neighbors.down,
+           grid->neighbors.down_right);
 }
 
 /**
@@ -267,4 +271,25 @@ int gather2DArray(bool **array, bool **local, int root, GridInfo *grid) {
     }
     free(tempArray);
     return (0);
+}
+
+void print_step(int step, GridInfo *grid, bool **block_a, bool **block_b) {
+    int i;
+    for (i = 0; i < grid->processes; i++) {
+        MPI_Barrier(grid->gridComm);
+        if (i == grid->gridRank) {
+            printf("----------------------------------------------------------------------------------------\n");
+            printf("step: %d\n", step);
+            printGridInfo(grid);
+            printf("block_a:");
+            print_array(block_a, false, true, grid->localBlockDims[0] + 2, grid->localBlockDims[1] + 2,
+                        grid->localBlockDims[0] + 2,
+                        grid->localBlockDims[1] + 2);
+            printf("changes: %d\n\n", grid->stepLocalChanges);
+            printf("block_b:");
+            print_array(block_b, false, true, grid->localBlockDims[0] + 2, grid->localBlockDims[1] + 2,
+                        grid->localBlockDims[0] + 2,
+                        grid->localBlockDims[1] + 2);
+        }
+    }
 }
