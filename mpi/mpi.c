@@ -6,7 +6,6 @@
 
 /*COLOR*/
 #define RED  "\x1B[31m"
-#define GREEN  "\x1B[32m"
 
 /*BOLD-COLOR*/
 #define B_RED  "\x1B[1m\x1B[31m"
@@ -26,6 +25,7 @@ void printGridInfo(GridInfo *grid) {
     printf("Process coordinates: (%d, %d)\n", grid->gridCoords[0], grid->gridCoords[1]);
     printf("Block dimensions: (%d, %d)\n", grid->blockDims[0], grid->blockDims[1]);
     printf("Local block dimensions: (%d, %d)\n", grid->localBlockDims[0], grid->localBlockDims[1]);
+    printf("Neighbors:\n");
     printf(B_GREEN" %2.2d   %2.2d    %2.2d \n"RESET, grid->neighbors.up_left, grid->neighbors.up, grid->neighbors.up_right);
     printf("   ↖   ↑   ↗\n");
     printf(B_GREEN"%2.2d"RESET" ←  "B_RED"%2.2d"RESET"   → "B_GREEN"%2.2d\n"RESET, grid->neighbors.left, grid->gridRank, grid->neighbors.right);

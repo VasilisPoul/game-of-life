@@ -5,11 +5,12 @@
 #include "game_of_life.h"
 
 /*COLOR*/
-#define RED  "\x1B[31m"
+#define RED "\x1B[31m"
+#define BLUE "\x1B[34m"
 
 /*BOLD-COLOR*/
-#define B_RED  "\x1B[1m\x1B[4m\x1B[31m"
-#define B_GREEN  "\x1B[1m\x1B[32m"
+#define B_RED "\x1B[1m\x1B[31m"
+#define B_GREEN "\x1B[1m\x1B[32m"
 
 /*RESET COLOR*/
 #define RESET  "\x1B[0m"
@@ -41,19 +42,23 @@ void print_array(bool **array, int rowDim, int colDim, int localRowDim, int loca
     printf("\n");
     for (int i = 0; i < rowDim; i++) {
         for (int j = 0; j < colDim; j++) {
-
-            if ((rowDim != localRowDim && colDim != localColDim) || (i > 0 && i < localRowDim - 1) && (j > 0 && j < localColDim - 1)) {
+            if ((rowDim != localRowDim && colDim != localColDim)) {
                 printf("%s %c", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C", ((j + 1) % localColDim == 0) ? '\t' : '\0');
             } else {
-                printf("%s %c", array[i][j] == true ? B_GREEN"\u2B1B"RESET : "\u2B1C",
-                       ((j + 1) % localColDim == 0) ? '\t' : '\0');
+                if ((i == 0 || i == rowDim - 1) || (j == 0 || j == colDim - 1)) {
+                    printf("%s %c", array[i][j] == true ? B_GREEN"\u2B1B"RESET : "\u2B1C", ((j + 1) % localColDim == 0) ? '\t' : '\0');
+                } else if ((i == 1 || i == rowDim - 2) || (j == 1 || j == colDim - 2)) {
+                    printf("%s %c", array[i][j] == true ? BLUE"\u2B1B"RESET : "\u2B1C", ((j + 1) % localColDim == 0) ? '\t' : '\0');
+                } else {
+                    printf("%s %c", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C", ((j + 1) % localColDim == 0) ? '\t' : '\0');
+                }
             }
-
         }
         printf("\n%c", ((i + 1) % localRowDim == 0) ? '\n' : '\0');
     }
     printf("\n");
 }
+
 
 void initialize_array(bool **array, int n, int m) {
     srand(time(NULL));
