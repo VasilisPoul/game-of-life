@@ -115,6 +115,9 @@ int setupGrid(GridInfo *grid, int N, int M) {
     grid->localBlockDims[0] = N / (int) sqrt(grid->processes);
     grid->localBlockDims[1] = M / (int) sqrt(grid->processes);
 
+    grid->stepLocalChanges = 0;
+    grid->stepGlobalChanges = 0;
+
     // Initialize neighbors
     initNeighbors(grid);
     return 0;

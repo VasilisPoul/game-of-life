@@ -4,11 +4,11 @@
 #include "mpi.h"
 #include "game_of_life.h"
 
-#define STEPS 2
+#define STEPS 100
 
 int main(int argc, char **argv) {
-    int s = 0, i = 0, j = 0, rank, size = 0, workers = 0, root = 0, alive = 0, stepAlive = 0, stepChanges = 0, stepLocalChanges = 0, sum = 0;
-    double start_w_time = 0.0, end_w_time = 0.0,  local_time = 0.0,  max_time = 0.0;
+    int s = 0, i = 0, j = 0, rank, size = 0, workers = 0, root = 0, sum = 0;
+    double start_w_time = 0.0, end_w_time = 0.0, local_time = 0.0, max_time = 0.0;
     bool **block = NULL, **a = NULL, **b = NULL, **c = NULL;
     MPI_Datatype colType, rowType;
     MPI_Request send_a_request[8], recv_a_request[8], send_b_request[8], recv_b_request[8];
@@ -78,12 +78,13 @@ int main(int argc, char **argv) {
             MPI_Startall(8, send_b_request);
         }
 
-        stepLocalChanges = 0;
+        grid.stepLocalChanges = 0;
+        grid.stepGlobalChanges = 0;
 
         // Υπολογισμός εσωτερικών στοιχείων «μετά» (άσπρα στοιχεία στο σχήμα) και ένδειξη κενού πίνακα ή μη αλλαγής (διπλό for)
         for (i = 2; i < grid.localBlockDims[0]; i++) {
             for (j = 2; j < grid.localBlockDims[1]; j++) {
-                calculate(a, b, i, j, &stepLocalChanges);
+                calculate(a, b, i, j, &grid.stepLocalChanges);
             }
         }
 
@@ -95,58 +96,61 @@ int main(int argc, char **argv) {
         }
 
 
-
         // Υπολογισμός εξωτερικών στοιχείων «μετά» (πράσινα στο σχήμα)-4 for
         // Up row
         for (j = 1; j < grid.localBlockDims[1] + 1; j++) {
-            calculate(a, b, 1, j, &stepLocalChanges);
+            calculate(a, b, 1, j, &grid.stepLocalChanges);
         }
 
         // Down row
         for (j = 1; j < grid.localBlockDims[1] + 1; j++) {
-            calculate(a, b, grid.localBlockDims[0], j, &stepLocalChanges);
+            calculate(a, b, grid.localBlockDims[0], j, &grid.stepLocalChanges);
         }
 
         // left Column
         for (i = 2; i < grid.localBlockDims[0]; i++) {
-            calculate(a, b, i, 1, &stepLocalChanges);
+            calculate(a, b, i, 1, &grid.stepLocalChanges);
         }
 
         // right column
         for (i = 2; i < grid.localBlockDims[0]; i++) {
-            calculate(a, b, i, grid.localBlockDims[1], &stepLocalChanges);
+            calculate(a, b, i, grid.localBlockDims[1], &grid.stepLocalChanges);
         }
 
-        for (i = 0; i < size; i++) {
-            MPI_Barrier(MPI_COMM_WORLD);
-            if (i == rank) {
-                printf("step: %d\n", s);
-                printGridInfo(&grid);
-                printf("a:");
-                print_array(a, grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2, grid.localBlockDims[0] + 2,
-                            grid.localBlockDims[1] + 2);
-                printf("alive: %d, changes: %d\n", stepAlive, stepLocalChanges);
+        //print_step(s, &grid, a, b);
+        gather2DArray(block, b, root, &grid);
 
-                printf("b:");
-                print_array(b, grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2,
-                            grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2);
+        for (i = 0; i < grid.processes; i++) {
+            MPI_Barrier(grid.gridComm);
+            if (i == grid.gridRank) {
+                if (grid.gridRank == root) {
+                    print_array(block, false, false, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0],
+                                grid.localBlockDims[1]);
+                }
             }
         }
+
 
         // Πριν Πίνακας = Μετά Πίνακας SWAP
         c = a;
         a = b;
         b = c;
 
-        // (reduce για έλεγχο εδώ)
-        if (s % 10 == 0) {
-            MPI_Allreduce(&stepLocalChanges, &stepChanges, 1, MPI_INT, MPI_SUM, grid.gridComm);
-            if (stepChanges == 0) {
-                printf("step: %d, rank: %d, stepLocalChanges: %d, stepChanges: %d\n", s,
-                       grid.gridRank, stepLocalChanges, stepChanges);
-                break;
+        for (i = 0; i < grid.localBlockDims[0] + 2; i++) {
+            for (j = 0; j < grid.localBlockDims[1] + 2; j++) {
+                b[i][j] = 0;
             }
         }
+
+        // (reduce για έλεγχο εδώ)
+        //if (s % 10 == 0) {
+        MPI_Allreduce(&grid.stepLocalChanges, &grid.stepGlobalChanges, 1, MPI_INT, MPI_SUM, grid.gridComm);
+        if (grid.stepGlobalChanges == 0) {
+            printf("step: %d, rank: %d, stepLocalChanges: %d, stepGlobalChanges: %d\n", s, grid.gridRank,
+                   grid.stepLocalChanges, grid.stepGlobalChanges);
+            break;
+        }
+        //}
 
         // Wait(SRequest) X 8 (Β,Ν,Δ,Α+γωνιακά) ή WaitAll (array of SRequests)
         if (s % 2 == 0) {
@@ -166,12 +170,6 @@ int main(int argc, char **argv) {
     MPI_Reduce(&local_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, grid.gridComm);
 
     //printf("Worker %d ==> Start Time = %.6f End Time = %.6f Duration = %.9f seconds\n", grid.gridRank, start_w_time, end_w_time, end_w_time - start_w_time);
-
-    if (s % 2 == 0) {
-        gather2DArray(block, a, root, &grid);
-    } else {
-        gather2DArray(block, b, root, &grid);
-    }
 
     //MPI_Comm_free(&grid.gridComm);
     MPI_Finalize();
