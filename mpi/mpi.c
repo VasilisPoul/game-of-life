@@ -14,7 +14,6 @@
 /*RESET COLOR*/
 #define RESET  "\x1B[0m"
 
-
 /**
  * Print grid info
 */

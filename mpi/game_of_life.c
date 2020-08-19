@@ -43,14 +43,18 @@ void print_array(bool **array, int rowDim, int colDim, int localRowDim, int loca
     for (int i = 0; i < rowDim; i++) {
         for (int j = 0; j < colDim; j++) {
             if ((rowDim != localRowDim && colDim != localColDim)) {
-                printf("%s %c", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C", ((j + 1) % localColDim == 0) ? '\t' : '\0');
+                printf("%s %c", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C",
+                       ((j + 1) % localColDim == 0) ? '\t' : '\0');
             } else {
                 if ((i == 0 || i == rowDim - 1) || (j == 0 || j == colDim - 1)) {
-                    printf("%s %c", array[i][j] == true ? B_GREEN"\u2B1B"RESET : "\u2B1C", ((j + 1) % localColDim == 0) ? '\t' : '\0');
+                    printf("%s %c", array[i][j] == true ? B_GREEN"\u2B1B"RESET : "\u2B1C",
+                           ((j + 1) % localColDim == 0) ? '\t' : '\0');
                 } else if ((i == 1 || i == rowDim - 2) || (j == 1 || j == colDim - 2)) {
-                    printf("%s %c", array[i][j] == true ? BLUE"\u2B1B"RESET : "\u2B1C", ((j + 1) % localColDim == 0) ? '\t' : '\0');
+                    printf("%s %c", array[i][j] == true ? BLUE"\u2B1B"RESET : "\u2B1C",
+                           ((j + 1) % localColDim == 0) ? '\t' : '\0');
                 } else {
-                    printf("%s %c", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C", ((j + 1) % localColDim == 0) ? '\t' : '\0');
+                    printf("%s %c", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C",
+                           ((j + 1) % localColDim == 0) ? '\t' : '\0');
                 }
             }
         }
@@ -61,11 +65,29 @@ void print_array(bool **array, int rowDim, int colDim, int localRowDim, int loca
 
 
 void initialize_array(bool **array, int n, int m) {
-    srand(time(NULL));
+    srand(12345/*time(NULL)*/);
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
             array[i][j] = (bool) (rand() % 2);
         }
+    }
+}
+
+// Inline calculate
+inline void calculate(bool **a, bool **b, int i, int j, int *changes) {
+    int sum = 0;
+    sum = a[i - 1][j - 1] + a[i - 1][j] + a[i - 1][j + 1] + a[i][j - 1] +
+          a[i][j + 1] + a[i + 1][j - 1] + a[i + 1][j] + a[i + 1][j + 1];
+    if (a[i][j]) {
+        if (sum <= 1 || sum >= 4) {
+            b[i][j] = false;
+            (*changes)++;
+        } else {
+            b[i][j] = true;
+        }
+    } else if (sum == 3) {
+        b[i][j] = true;
+        (*changes)++;
     }
 }
 
