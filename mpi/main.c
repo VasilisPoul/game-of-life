@@ -8,7 +8,7 @@
 
 int main(int argc, char **argv) {
     int s = 0, i = 0, j = 0, rank, size = 0, workers = 0, root = 0, alive = 0, stepAlive = 0, stepChanges = 0, stepLocalChanges = 0, sum = 0;
-    double start_w_time = 0.0, end_w_time = 0.0;
+    double start_w_time = 0.0, end_w_time = 0.0,  local_time = 0.0,  max_time = 0.0;
     bool **block = NULL, **a = NULL, **b = NULL, **c = NULL;
     MPI_Datatype colType, rowType;
     MPI_Request send_a_request[8], recv_a_request[8], send_b_request[8], recv_b_request[8];
@@ -93,12 +93,7 @@ int main(int argc, char **argv) {
             MPI_Waitall(8, recv_b_request, recv_b_status);
         }
 
-        // Wait(SRequest) X 8 (Β,Ν,Δ,Α+γωνιακά) ή WaitAll (array of SRequests)
-        if (s % 2 == 0) {
-            MPI_Waitall(8, send_a_request, send_a_status);
-        } else {
-            MPI_Waitall(8, send_b_request, send_b_status);
-        }
+
 
         // Υπολογισμός εξωτερικών στοιχείων «μετά» (πράσινα στο σχήμα)-4 for
         // Up row
@@ -152,10 +147,12 @@ int main(int argc, char **argv) {
             }
         }
 
-        // Πριν Πίνακας = Μετά Πίνακας SWAP
-        c = a;
-        a = b;
-        b = c;
+        // Wait(SRequest) X 8 (Β,Ν,Δ,Α+γωνιακά) ή WaitAll (array of SRequests)
+        if (s % 2 == 0) {
+            MPI_Waitall(8, send_a_request, send_a_status);
+        } else {
+            MPI_Waitall(8, send_b_request, send_b_status);
+        }
 
     }
 
@@ -163,6 +160,9 @@ int main(int argc, char **argv) {
 
     //End MPI_Wtime
     end_w_time = MPI_Wtime();
+    local_time = end_w_time - start_w_time;
+
+    MPI_Reduce(&local_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, grid.gridComm);
 
     //printf("Worker %d ==> Start Time = %.6f End Time = %.6f Duration = %.9f seconds\n", grid.gridRank, start_w_time, end_w_time, end_w_time - start_w_time);
 
@@ -172,18 +172,16 @@ int main(int argc, char **argv) {
         gather2DArray(block, b, root, &grid);
     }
 
-    if (rank == root) {
-        printf("block:\n");
-        print_array(block, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0], grid.localBlockDims[1]);
-    }
-
     //MPI_Comm_free(&grid.gridComm);
     MPI_Finalize();
 
-    free2DArray(a, grid.localBlockDims[0] + 2);
-    free2DArray(b, grid.localBlockDims[0] + 2);
-
     if (rank == root) {
+        printf("block:\n");
+        print_array(block, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0], grid.localBlockDims[1]);
+        printf("Max time: %f\n", max_time);
         free2DArray(block, grid.blockDims[0]);
     }
+
+    free2DArray(a, grid.localBlockDims[0] + 2);
+    free2DArray(b, grid.localBlockDims[0] + 2);
 }
