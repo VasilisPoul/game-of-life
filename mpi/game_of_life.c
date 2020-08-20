@@ -41,18 +41,18 @@ void print_array(bool **array, bool split, bool internals, int rowDim, int colDi
     for (int i = 0; i < rowDim; i++) {
         for (int j = 0; j < colDim; j++) {
             if ((rowDim != localRowDim && colDim != localColDim)) {
-                printf("%s %c", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C",
-                       (split && (j + 1) % localColDim == 0) ? '\t' : '\0');
+                printf("%s %c ", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C",
+                       (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
             } else {
                 if ((i == 0 || i == rowDim - 1) || (j == 0 || j == colDim - 1)) {
-                    printf("%s %c", array[i][j] == true ? B_GREEN"\u2B1B"RESET : "\u2B1C",
-                           (split && (j + 1) % localColDim == 0) ? '\t' : '\0');
-                } else if (internals && ( (i == 1 || i == rowDim - 2) || (j == 1 || j == colDim - 2))) {
-                    printf("%s %c", array[i][j] == true ? BLUE"\u2B1B"RESET : "\u2B1C",
-                           (split && (j + 1) % localColDim == 0) ? '\t' : '\0');
+                    printf("%s %c ", array[i][j] == true ? B_GREEN"\u2B1B"RESET : "\u2B1C",
+                           (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+                } else if (internals && ((i == 1 || i == rowDim - 2) || (j == 1 || j == colDim - 2))) {
+                    printf("%s %c ", array[i][j] == true ? BLUE"\u2B1B"RESET : "\u2B1C",
+                           (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
                 } else {
-                    printf("%s %c", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C",
-                           (split && (j + 1) % localColDim == 0) ? '\t' : '\0');
+                    printf("%s %c ", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C",
+                           (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
                 }
             }
         }
