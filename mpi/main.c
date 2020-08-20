@@ -4,7 +4,7 @@
 #include "mpi.h"
 #include "game_of_life.h"
 
-#define STEPS 100
+#define STEPS 1000
 
 int main(int argc, char **argv) {
     int s = 0, i = 0, j = 0, rank, size = 0, workers = 0, root = 0, sum = 0;
@@ -50,6 +50,8 @@ int main(int argc, char **argv) {
     MPI_Type_vector(grid.localBlockDims[0], 1, grid.localBlockDims[1] + 2, MPI_CXX_BOOL, &colType);
     MPI_Type_commit(&colType);
 
+
+    // Todo: read from file
     scatter2DArray(block, a, root, &grid);
 
     sendInit(a, grid, rowType, colType, send_a_request);
@@ -65,11 +67,10 @@ int main(int argc, char **argv) {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //For #επαναλήψεων (σταθερός σε όλες τις μετρήσεις σας)
+    // Start loop
     for (s = 0; s < STEPS; s++) {
 
-        // Irecv(RRequest) //X 8(Β, Ν, Δ, Α + γωνιακά)
-        // Isend (SRequest) X 8 (Β,Ν,Δ,Α + γωνιακά)
+        // Start receive/send requests
         if (s % 2 == 0) {
             MPI_Startall(8, recv_a_request);
             MPI_Startall(8, send_a_request);
@@ -79,86 +80,78 @@ int main(int argc, char **argv) {
         }
 
         grid.stepLocalChanges = 0;
-        grid.stepGlobalChanges = 0;
 
-        // Υπολογισμός εσωτερικών στοιχείων «μετά» (άσπρα στοιχεία στο σχήμα) και ένδειξη κενού πίνακα ή μη αλλαγής (διπλό for)
+        // Calculate internals
         for (i = 2; i < grid.localBlockDims[0]; i++) {
             for (j = 2; j < grid.localBlockDims[1]; j++) {
+                b[i][j] = 0;
                 calculate(a, b, i, j, &grid.stepLocalChanges);
             }
         }
 
-        // Wait (RRequest) Χ 8 (Β,Ν,Δ,Α+γωνιακά) ή WaitAll (array of RRequests)
+        // Wait receive requests
         if (s % 2 == 0) {
             MPI_Waitall(8, recv_a_request, recv_a_status);
         } else {
             MPI_Waitall(8, recv_b_request, recv_b_status);
         }
 
-
-        // Υπολογισμός εξωτερικών στοιχείων «μετά» (πράσινα στο σχήμα)-4 for
-        // Up row
+        // Calculate up row
         for (j = 1; j < grid.localBlockDims[1] + 1; j++) {
+            b[1][j] = 0;
             calculate(a, b, 1, j, &grid.stepLocalChanges);
         }
 
-        // Down row
+        // Calculate down row
         for (j = 1; j < grid.localBlockDims[1] + 1; j++) {
+            b[grid.localBlockDims[0]][j] = 0;
             calculate(a, b, grid.localBlockDims[0], j, &grid.stepLocalChanges);
         }
 
-        // left Column
+        // Calculate left Column
         for (i = 2; i < grid.localBlockDims[0]; i++) {
+            b[i][1] = 0;
             calculate(a, b, i, 1, &grid.stepLocalChanges);
         }
 
-        // right column
+        // Calculate right column
         for (i = 2; i < grid.localBlockDims[0]; i++) {
+            b[i][grid.localBlockDims[1]] = 0;
             calculate(a, b, i, grid.localBlockDims[1], &grid.stepLocalChanges);
         }
 
         //print_step(s, &grid, a, b);
+        // Todo: write to file
         gather2DArray(block, b, root, &grid);
+//        for (i = 0; i < grid.processes; i++) {
+//            MPI_Barrier(grid.gridComm);
+//            if (i == grid.gridRank) {
+//                if (grid.gridRank == root) {
+//                    print_array(block, true, false, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0],
+//                                grid.localBlockDims[1]);
+//                }
+//            }
+//        }
 
-        for (i = 0; i < grid.processes; i++) {
-            MPI_Barrier(grid.gridComm);
-            if (i == grid.gridRank) {
-                if (grid.gridRank == root) {
-                    print_array(block, false, false, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0],
-                                grid.localBlockDims[1]);
-                }
-            }
-        }
-
-
-        // Πριν Πίνακας = Μετά Πίνακας SWAP
+        // Swap local blocks
         c = a;
         a = b;
         b = c;
 
-        for (i = 0; i < grid.localBlockDims[0] + 2; i++) {
-            for (j = 0; j < grid.localBlockDims[1] + 2; j++) {
-                b[i][j] = 0;
+        // Summarize local all local changes
+        if (s % 10 == 0) {
+            MPI_Allreduce(&grid.stepLocalChanges, &grid.stepGlobalChanges, 1, MPI_INT, MPI_SUM, grid.gridComm);
+            if (grid.stepGlobalChanges == 0) {
+                break;
             }
         }
 
-        // (reduce για έλεγχο εδώ)
-        //if (s % 10 == 0) {
-        MPI_Allreduce(&grid.stepLocalChanges, &grid.stepGlobalChanges, 1, MPI_INT, MPI_SUM, grid.gridComm);
-        if (grid.stepGlobalChanges == 0) {
-            printf("step: %d, rank: %d, stepLocalChanges: %d, stepGlobalChanges: %d\n", s, grid.gridRank,
-                   grid.stepLocalChanges, grid.stepGlobalChanges);
-            break;
-        }
-        //}
-
-        // Wait(SRequest) X 8 (Β,Ν,Δ,Α+γωνιακά) ή WaitAll (array of SRequests)
+        // Wait send requests
         if (s % 2 == 0) {
             MPI_Waitall(8, send_a_request, send_a_status);
         } else {
             MPI_Waitall(8, send_b_request, send_b_status);
         }
-
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,19 +159,20 @@ int main(int argc, char **argv) {
     //End MPI_Wtime
     end_w_time = MPI_Wtime();
     local_time = end_w_time - start_w_time;
-
     MPI_Reduce(&local_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, grid.gridComm);
 
-    //printf("Worker %d ==> Start Time = %.6f End Time = %.6f Duration = %.9f seconds\n", grid.gridRank, start_w_time, end_w_time, end_w_time - start_w_time);
+    printf("Worker %d ==> Start Time = %.6f End Time = %.6f Duration = %.9f seconds\n", grid.gridRank, start_w_time, end_w_time, end_w_time - start_w_time);
+
+    gather2DArray(block, a, root, &grid);
 
     //MPI_Comm_free(&grid.gridComm);
     MPI_Finalize();
 
     if (rank == root) {
         printf("block:\n");
-        print_array(block, false, true, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0],
+        print_array(block, true, true, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0],
                     grid.localBlockDims[1]);
-        printf("Max time: %f\n", max_time);
+        printf("Steps: %d, Max time: %f\n", s, max_time);
         free2DArray(block, grid.blockDims[0]);
     }
 

@@ -63,7 +63,7 @@ void print_array(bool **array, bool split, bool internals, int rowDim, int colDi
 
 
 void initialize_array(bool **array, int n, int m) {
-    srand(12345/*time(NULL)*/);
+    srand(time(NULL));
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
             array[i][j] = (bool) (rand() % 2);
