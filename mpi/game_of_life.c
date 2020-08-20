@@ -72,19 +72,18 @@ void initialize_array(bool **array, int n, int m) {
 }
 
 // Inline calculate
-inline void calculate(bool **a, bool **b, int i, int j, int *changes) {
-    int sum = 0;
-    sum = a[i - 1][j - 1] + a[i - 1][j] + a[i - 1][j + 1] + a[i][j - 1] +
-          a[i][j + 1] + a[i + 1][j - 1] + a[i + 1][j] + a[i + 1][j + 1];
-    if (a[i][j]) {
+inline void calculate(bool **old, bool **current, int i, int j, int *changes) {
+    int sum = old[i - 1][j - 1] + old[i - 1][j] + old[i - 1][j + 1] + old[i][j - 1] +
+              old[i][j + 1] + old[i + 1][j - 1] + old[i + 1][j] + old[i + 1][j + 1];
+    if (old[i][j]) {
         if (sum <= 1 || sum >= 4) {
-            b[i][j] = false;
+            current[i][j] = false;
             (*changes)++;
         } else {
-            b[i][j] = true;
+            current[i][j] = true;
         }
     } else if (sum == 3) {
-        b[i][j] = true;
+        current[i][j] = true;
         (*changes)++;
     }
 }
