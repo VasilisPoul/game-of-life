@@ -10,7 +10,7 @@ void free2DArray(bool **array, int rows);
 
 int **create(int n, int m);
 
-void initialize_array(bool **array, int n, int m);
+void initialize_block(bool **block, int n, int m);
 
 void print_array(bool **array, bool split, bool internals, int rowDim, int colDim, int localRowDim, int localColDim);
 

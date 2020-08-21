@@ -62,11 +62,11 @@ void print_array(bool **array, bool split, bool internals, int rowDim, int colDi
 }
 
 
-void initialize_array(bool **array, int n, int m) {
+void initialize_block(bool **block, int n, int m) {
     srand(time(NULL));
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
-            array[i][j] = (bool) (rand() % 2);
+            block[i][j] = (bool) (rand() % 2);
         }
     }
 }
@@ -85,6 +85,8 @@ inline void calculate(bool **old, bool **current, int i, int j, int *changes) {
     } else if (sum == 3) {
         current[i][j] = true;
         (*changes)++;
+    } else {
+        current[i][j] = false;
     }
 }
 

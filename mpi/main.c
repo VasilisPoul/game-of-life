@@ -9,7 +9,7 @@
 int main(int argc, char **argv) {
     int s = 0, i = 0, j = 0, rank, size = 0, workers = 0, root = 0, sum = 0;
     double start_w_time = 0.0, end_w_time = 0.0, local_time = 0.0, max_time = 0.0;
-    bool **block = NULL, **a = NULL, **b = NULL, **c = NULL;
+    bool **block = NULL, **old = NULL, **current = NULL, **temp = NULL;
     MPI_Datatype colType, rowType;
     MPI_Request send_a_request[8], recv_a_request[8], send_b_request[8], recv_b_request[8];
     MPI_Status send_a_status[8], send_b_status[8], recv_a_status[8], recv_b_status[8];
@@ -26,19 +26,19 @@ int main(int argc, char **argv) {
     if (rank == root) {
         //printGridInfo(&grid);
         block = allocate2DArray(grid.blockDims[0], grid.blockDims[1]);
-        initialize_array(block, grid.blockDims[0], grid.blockDims[1]);
+        initialize_block(block, grid.blockDims[0], grid.blockDims[1]);
         printf("block:\n");
         print_array(block, true, true, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0],
                     grid.localBlockDims[1]);
     }
 
-    a = allocate2DArray(grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2);
-    b = allocate2DArray(grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2);
+    old = allocate2DArray(grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2);
+    current = allocate2DArray(grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2);
 
     for (i = 0; i < grid.localBlockDims[0] + 2; i++) {
         for (j = 0; j < grid.localBlockDims[1] + 2; j++) {
-            a[i][j] = 0;
-            b[i][j] = 0;
+            old[i][j] = 0;
+            current[i][j] = 0;
         }
     }
 
@@ -51,14 +51,30 @@ int main(int argc, char **argv) {
     MPI_Type_commit(&colType);
 
 
+
+
+
+
+
     // Todo: read from file
-    scatter2DArray(block, a, root, &grid);
+    scatter2DArray(block, old, root, &grid);
 
-    sendInit(a, grid, rowType, colType, send_a_request);
-    recvInit(a, grid, rowType, colType, recv_a_request);
 
-    sendInit(b, grid, rowType, colType, send_b_request);
-    recvInit(b, grid, rowType, colType, recv_b_request);
+
+
+
+
+
+
+
+
+
+
+    sendInit(old, grid, rowType, colType, send_a_request);
+    recvInit(old, grid, rowType, colType, recv_a_request);
+
+    sendInit(current, grid, rowType, colType, send_b_request);
+    recvInit(current, grid, rowType, colType, recv_b_request);
 
     MPI_Barrier(grid.gridComm); //(συγχρονισμός διεργασιών πριν τις μετρήσεις)
 
@@ -83,9 +99,9 @@ int main(int argc, char **argv) {
 
         // Calculate internals
         for (i = 2; i < grid.localBlockDims[0]; i++) {
-            for (j = 2; j < grid.localBlockDims[1]; j++) {
-                b[i][j] = 0;
-                calculate(a, b, i, j, &grid.stepLocalChanges);
+            for (j = 2; j < grid.localBlockDims[
+            1]; j++) {
+                calculate(old, current, i, j, &grid.stepLocalChanges);
             }
         }
 
@@ -98,45 +114,50 @@ int main(int argc, char **argv) {
 
         // Calculate up row
         for (j = 1; j < grid.localBlockDims[1] + 1; j++) {
-            b[1][j] = 0;
-            calculate(a, b, 1, j, &grid.stepLocalChanges);
+            calculate(old, current, 1, j, &grid.stepLocalChanges);
         }
 
         // Calculate down row
         for (j = 1; j < grid.localBlockDims[1] + 1; j++) {
-            b[grid.localBlockDims[0]][j] = 0;
-            calculate(a, b, grid.localBlockDims[0], j, &grid.stepLocalChanges);
+            calculate(old, current, grid.localBlockDims[0], j, &grid.stepLocalChanges);
         }
 
         // Calculate left Column
         for (i = 2; i < grid.localBlockDims[0]; i++) {
-            b[i][1] = 0;
-            calculate(a, b, i, 1, &grid.stepLocalChanges);
+            calculate(old, current, i, 1, &grid.stepLocalChanges);
         }
 
         // Calculate right column
         for (i = 2; i < grid.localBlockDims[0]; i++) {
-            b[i][grid.localBlockDims[1]] = 0;
-            calculate(a, b, i, grid.localBlockDims[1], &grid.stepLocalChanges);
+            calculate(old, current, i, grid.localBlockDims[1], &grid.stepLocalChanges);
         }
 
-        //print_step(s, &grid, a, b);
+
+
+
+
+        //print_step(s, &grid, old, current);
         // Todo: write to file
-        gather2DArray(block, b, root, &grid);
-//        for (i = 0; i < grid.processes; i++) {
-//            MPI_Barrier(grid.gridComm);
-//            if (i == grid.gridRank) {
-//                if (grid.gridRank == root) {
-//                    print_array(block, true, false, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0],
-//                                grid.localBlockDims[1]);
-//                }
-//            }
-//        }
+        gather2DArray(block, current, root, &grid);
+        for (i = 0; i < grid.processes; i++) {
+            MPI_Barrier(grid.gridComm);
+            if (i == grid.gridRank) {
+                if (grid.gridRank == root) {
+                    print_array(block, true, false, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0],
+                                grid.localBlockDims[1]);
+                }
+            }
+        }
+
+
+
+
+
 
         // Swap local blocks
-        c = a;
-        a = b;
-        b = c;
+        temp = old;
+        old = current;
+        current = temp;
 
         // Summarize local all local changes
         if (s % 10 == 0) {
@@ -163,7 +184,7 @@ int main(int argc, char **argv) {
 
     printf("Worker %d ==> Start Time = %.6f End Time = %.6f Duration = %.9f seconds\n", grid.gridRank, start_w_time, end_w_time, end_w_time - start_w_time);
 
-    gather2DArray(block, a, root, &grid);
+    gather2DArray(block, old, root, &grid);
 
     //MPI_Comm_free(&grid.gridComm);
     MPI_Finalize();
@@ -176,6 +197,6 @@ int main(int argc, char **argv) {
         free2DArray(block, grid.blockDims[0]);
     }
 
-    free2DArray(a, grid.localBlockDims[0] + 2);
-    free2DArray(b, grid.localBlockDims[0] + 2);
+    free2DArray(old, grid.localBlockDims[0] + 2);
+    free2DArray(current, grid.localBlockDims[0] + 2);
 }
