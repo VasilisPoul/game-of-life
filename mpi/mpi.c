@@ -126,49 +126,49 @@ int setupGrid(GridInfo *grid, int N, int M) {
 /**
  * Send requests initialization
 */
-void sendInit(bool **block, GridInfo grid, MPI_Datatype rowType, MPI_Datatype colType, MPI_Request *req) {
+void sendInit(char **block, GridInfo grid, MPI_Datatype rowType, MPI_Datatype colType, MPI_Request *req) {
     MPI_Send_init(&block[grid.localBlockDims[0]][1], 1, rowType, grid.neighbors.down, UP, grid.gridComm,
                   &req[0]);
     MPI_Send_init(&block[1][1], 1, rowType, grid.neighbors.up, DOWN, grid.gridComm, &req[1]);
     MPI_Send_init(&block[1][1], 1, colType, grid.neighbors.left, RIGHT, grid.gridComm, &req[2]);
     MPI_Send_init(&block[1][grid.localBlockDims[1]], 1, colType, grid.neighbors.right, LEFT, grid.gridComm,
                   &req[3]);
-    MPI_Send_init(&block[grid.localBlockDims[0]][grid.localBlockDims[1]], 1, MPI_CXX_BOOL,
+    MPI_Send_init(&block[grid.localBlockDims[0]][grid.localBlockDims[1]], 1, MPI_CHAR,
                   grid.neighbors.down_right, UP_LEFT, grid.gridComm, &req[4]);
-    MPI_Send_init(&block[grid.localBlockDims[0]][1], 1, MPI_CXX_BOOL, grid.neighbors.down_left, UP_RIGHT,
+    MPI_Send_init(&block[grid.localBlockDims[0]][1], 1, MPI_CHAR, grid.neighbors.down_left, UP_RIGHT,
                   grid.gridComm, &req[5]);
-    MPI_Send_init(&block[1][1], 1, MPI_CXX_BOOL, grid.neighbors.up_left, DOWN_RIGHT, grid.gridComm, &req[6]);
-    MPI_Send_init(&block[1][grid.localBlockDims[1]], 1, MPI_CXX_BOOL, grid.neighbors.up_right, DOWN_LEFT,
+    MPI_Send_init(&block[1][1], 1, MPI_CHAR, grid.neighbors.up_left, DOWN_RIGHT, grid.gridComm, &req[6]);
+    MPI_Send_init(&block[1][grid.localBlockDims[1]], 1, MPI_CHAR, grid.neighbors.up_right, DOWN_LEFT,
                   grid.gridComm, &req[7]);
 }
 
 /**
  * Recieve requests initialization
 */
-void recvInit(bool **block, GridInfo grid, MPI_Datatype rowType, MPI_Datatype colType, MPI_Request *req) {
+void recvInit(char **block, GridInfo grid, MPI_Datatype rowType, MPI_Datatype colType, MPI_Request *req) {
     MPI_Recv_init(&block[0][1], 1, rowType, grid.neighbors.up, UP, grid.gridComm, &req[0]);
     MPI_Recv_init(&block[grid.localBlockDims[0] + 1][1], 1, rowType, grid.neighbors.down, DOWN, grid.gridComm,
                   &req[1]);
     MPI_Recv_init(&block[1][grid.localBlockDims[1] + 1], 1, colType, grid.neighbors.right, RIGHT, grid.gridComm,
                   &req[2]);
     MPI_Recv_init(&block[1][0], 1, colType, grid.neighbors.left, LEFT, grid.gridComm, &req[3]);
-    MPI_Recv_init(&block[0][0], 1, MPI_CXX_BOOL, grid.neighbors.up_left, UP_LEFT, grid.gridComm, &req[4]);
-    MPI_Recv_init(&block[0][grid.localBlockDims[1] + 1], 1, MPI_CXX_BOOL, grid.neighbors.up_right, UP_RIGHT,
+    MPI_Recv_init(&block[0][0], 1, MPI_CHAR, grid.neighbors.up_left, UP_LEFT, grid.gridComm, &req[4]);
+    MPI_Recv_init(&block[0][grid.localBlockDims[1] + 1], 1, MPI_CHAR, grid.neighbors.up_right, UP_RIGHT,
                   grid.gridComm, &req[5]);
-    MPI_Recv_init(&block[grid.localBlockDims[0] + 1][grid.localBlockDims[1] + 1], 1, MPI_CXX_BOOL,
+    MPI_Recv_init(&block[grid.localBlockDims[0] + 1][grid.localBlockDims[1] + 1], 1, MPI_CHAR,
                   grid.neighbors.down_right, DOWN_RIGHT, grid.gridComm, &req[6]);
-    MPI_Recv_init(&block[grid.localBlockDims[0] + 1][0], 1, MPI_CXX_BOOL, grid.neighbors.down_left, DOWN_LEFT,
+    MPI_Recv_init(&block[grid.localBlockDims[0] + 1][0], 1, MPI_CHAR, grid.neighbors.down_left, DOWN_LEFT,
                   grid.gridComm, &req[7]);
 }
 
 /**
  * Scatter 2D array
 */
-int scatter2DArray(bool **array, bool **local, int root, GridInfo *grid) {
+int scatter2DArray(char **array, char **local, int root, GridInfo *grid) {
     int flag, rank, loops = grid->blockDims[0] / grid->localBlockDims[0];
     int size, dest, packPosition;
     int c, index, coords[2], i, j;
-    bool *tempArray;
+    char *tempArray;
     MPI_Status status;
 
     MPI_Initialized(&flag);
@@ -179,7 +179,7 @@ int scatter2DArray(bool **array, bool **local, int root, GridInfo *grid) {
 
     if ((root < 0) || (root >= size)) return (-1);
 
-    tempArray = (bool *) malloc(grid->localBlockDims[0] * grid->localBlockDims[0] * sizeof(bool));
+    tempArray = (char *) malloc(grid->localBlockDims[0] * grid->localBlockDims[0] * sizeof(char));
     if (!tempArray) return (-1);
 
     if (rank == root) {
@@ -191,11 +191,11 @@ int scatter2DArray(bool **array, bool **local, int root, GridInfo *grid) {
                 packPosition = 0;
                 for (i = grid->localBlockDims[0] * c; i < grid->localBlockDims[0] * (c + 1); i++) {
                     for (j = grid->localBlockDims[0] * index; j < grid->localBlockDims[0] * (index + 1); j++) {
-                        MPI_Pack(&array[i][j], 1, MPI_CXX_BOOL, tempArray, 256, &packPosition, grid->gridComm);
+                        MPI_Pack(&array[i][j], 1, MPI_CHAR, tempArray, 256, &packPosition, grid->gridComm);
                     }
                 }
                 if (dest != root) {
-                    MPI_Send(tempArray, grid->localBlockDims[0] * grid->localBlockDims[0], MPI_CXX_BOOL, dest, 0,
+                    MPI_Send(tempArray, grid->localBlockDims[0] * grid->localBlockDims[0], MPI_CHAR, dest, 0,
                              grid->gridComm);
                 } else {
                     for (i = 1; i < grid->localBlockDims[0] + 1; i++)
@@ -205,7 +205,7 @@ int scatter2DArray(bool **array, bool **local, int root, GridInfo *grid) {
             }
         }
     } else {
-        MPI_Recv(tempArray, grid->localBlockDims[0] * grid->localBlockDims[0], MPI_CXX_BOOL, root, 0, grid->gridComm,
+        MPI_Recv(tempArray, grid->localBlockDims[0] * grid->localBlockDims[0], MPI_CHAR, root, 0, grid->gridComm,
                  &status);
         for (c = 1; c < grid->localBlockDims[0] + 1; c++)
             for (index = 1; index < grid->localBlockDims[1] + 1; index++)
@@ -218,11 +218,11 @@ int scatter2DArray(bool **array, bool **local, int root, GridInfo *grid) {
 /**
  * Gather 2D array
 */
-int gather2DArray(bool **array, bool **local, int root, GridInfo *grid) {
+int gather2DArray(char **array, char **local, int root, GridInfo *grid) {
     int flag, rank, loops = grid->blockDims[0] / grid->localBlockDims[0];
     int size, cnt, source, rootCoords[2];
     int counter, index, coords[2], i, j;
-    bool *tempArray;
+    char *tempArray;
     MPI_Status status;
     MPI_Initialized(&flag);
     if (flag == false) return (-1);
@@ -232,7 +232,7 @@ int gather2DArray(bool **array, bool **local, int root, GridInfo *grid) {
 
     if ((root < 0) || (root >= size)) return (-1);
 
-    tempArray = (bool *) malloc(grid->localBlockDims[0] * grid->localBlockDims[0] * sizeof(bool));
+    tempArray = (char *) malloc(grid->localBlockDims[0] * grid->localBlockDims[0] * sizeof(char));
     if (!tempArray) return (-1);
     if (rank == root) {
         for (counter = 0; counter < loops; counter++) {
@@ -250,7 +250,7 @@ int gather2DArray(bool **array, bool **local, int root, GridInfo *grid) {
                         }
                     }
                 } else {
-                    MPI_Recv(tempArray, grid->localBlockDims[0] * grid->localBlockDims[0], MPI_CXX_BOOL, source, 0,
+                    MPI_Recv(tempArray, grid->localBlockDims[0] * grid->localBlockDims[0], MPI_CHAR, source, 0,
                              grid->gridComm,
                              &status);
                     cnt = 0;
@@ -270,13 +270,13 @@ int gather2DArray(bool **array, bool **local, int root, GridInfo *grid) {
                 tempArray[cnt] = local[i][j];
                 cnt++;
             }
-        MPI_Send(tempArray, grid->localBlockDims[0] * grid->localBlockDims[0], MPI_CXX_BOOL, root, 0, grid->gridComm);
+        MPI_Send(tempArray, grid->localBlockDims[0] * grid->localBlockDims[0], MPI_CHAR, root, 0, grid->gridComm);
     }
     free(tempArray);
     return (0);
 }
 
-void print_step(int step, GridInfo *grid, bool **block_a, bool **block_b) {
+void print_step(int step, GridInfo *grid, char **old, char **current) {
     int i;
     for (i = 0; i < grid->processes; i++) {
         MPI_Barrier(grid->gridComm);
@@ -284,13 +284,13 @@ void print_step(int step, GridInfo *grid, bool **block_a, bool **block_b) {
             printf("----------------------------------------------------------------------------------------\n");
             printf("step: %d\n", step);
             printGridInfo(grid);
-            printf("block_a:");
-            print_array(block_a, false, true, grid->localBlockDims[0] + 2, grid->localBlockDims[1] + 2,
+            printf("old:");
+            print_array(old, false, true, grid->localBlockDims[0] + 2, grid->localBlockDims[1] + 2,
                         grid->localBlockDims[0] + 2,
                         grid->localBlockDims[1] + 2);
             printf("changes: %d\n\n", grid->stepLocalChanges);
-            printf("block_b:");
-            print_array(block_b, false, true, grid->localBlockDims[0] + 2, grid->localBlockDims[1] + 2,
+            printf("current:");
+            print_array(current, false, true, grid->localBlockDims[0] + 2, grid->localBlockDims[1] + 2,
                         grid->localBlockDims[0] + 2,
                         grid->localBlockDims[1] + 2);
         }

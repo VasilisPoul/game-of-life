@@ -1,21 +1,19 @@
 #ifndef __GAME_OF_LIFE_H__
 #define __GAME_OF_LIFE_H__
 
-#define TABLE_N 32
-#define TABLE_M 32
+#include <stdbool.h>
 
-bool **allocate2DArray(int rows, int columns);
+#define TABLE_N 12
+#define TABLE_M 12
 
-void free2DArray(bool **array, int rows);
+char **allocate2DArray(int rows, int columns);
 
-int **create(int n, int m);
+void free2DArray(char **array, int rows);
 
-void initialize_block(bool **block, int n, int m);
+void initialize_block(char **block, int n, int m);
 
-void print_array(bool **array, bool split, bool internals, int rowDim, int colDim, int localRowDim, int localColDim);
+void print_array(char **array, bool split, bool internals, int rowDim, int colDim, int localRowDim, int localColDim);
 
-void calculate(bool **old, bool **current, int i, int j, int *changes);
-
-int operate(bool **array, int n, int m);
+void calculate(char **old, char **current, int i, int j, int *changes);
 
 #endif

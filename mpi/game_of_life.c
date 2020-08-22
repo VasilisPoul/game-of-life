@@ -16,18 +16,18 @@
 #define RESET  "\x1B[0m"
 
 
-bool **allocate2DArray(int rows, int columns) {
-    bool **array;
+char **allocate2DArray(int rows, int columns) {
+    char **array;
     int i = 0;
-    array = malloc(rows * sizeof(bool *));
-    array[0] = malloc(rows * columns * sizeof(bool));
+    array = malloc(rows * sizeof(char *));
+    array[0] = malloc(rows * columns * sizeof(char));
     for (i = 1; i < rows; i++) {
         array[i] = &(array[0][i * rows]);
     }
     return array;
 }
 
-void free2DArray(bool **array, int rows) {
+void free2DArray(char **array, int rows) {
     free(array[0]);
     free(array);
 }
@@ -36,22 +36,22 @@ int mod(int x, int m) {
     return (x % m + m) % m;
 }
 
-void print_array(bool **array, bool split, bool internals, int rowDim, int colDim, int localRowDim, int localColDim) {
+void print_array(char **array, bool split, bool internals, int rowDim, int colDim, int localRowDim, int localColDim) {
     printf("\n");
     for (int i = 0; i < rowDim; i++) {
         for (int j = 0; j < colDim; j++) {
             if ((rowDim != localRowDim && colDim != localColDim)) {
-                printf("%s %c ", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C",
+                printf("%s %c ", array[i][j] == '1' ? RED"\u2B1B"RESET : "\u2B1C",
                        (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
             } else {
                 if ((i == 0 || i == rowDim - 1) || (j == 0 || j == colDim - 1)) {
-                    printf("%s %c ", array[i][j] == true ? B_GREEN"\u2B1B"RESET : "\u2B1C",
+                    printf("%s %c ", array[i][j] == '1' ? B_GREEN"\u2B1B"RESET : "\u2B1C",
                            (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
                 } else if (internals && ((i == 1 || i == rowDim - 2) || (j == 1 || j == colDim - 2))) {
-                    printf("%s %c ", array[i][j] == true ? BLUE"\u2B1B"RESET : "\u2B1C",
+                    printf("%s %c ", array[i][j] == '1' ? BLUE"\u2B1B"RESET : "\u2B1C",
                            (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
                 } else {
-                    printf("%s %c ", array[i][j] == true ? RED"\u2B1B"RESET : "\u2B1C",
+                    printf("%s %c ", array[i][j] == '1' ? RED"\u2B1B"RESET : "\u2B1C",
                            (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
                 }
             }
@@ -62,81 +62,30 @@ void print_array(bool **array, bool split, bool internals, int rowDim, int colDi
 }
 
 
-void initialize_block(bool **block, int n, int m) {
+void initialize_block(char **block, int n, int m) {
     srand(time(NULL));
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
-            block[i][j] = (bool) (rand() % 2);
+            block[i][j] = rand() % 2 == 0 ? '0' : '1';
         }
     }
 }
 
 // Inline calculate
-inline void calculate(bool **old, bool **current, int i, int j, int *changes) {
+inline void calculate(char **old, char **current, int i, int j, int *changes) {
     int sum = old[i - 1][j - 1] + old[i - 1][j] + old[i - 1][j + 1] + old[i][j - 1] +
               old[i][j + 1] + old[i + 1][j - 1] + old[i + 1][j] + old[i + 1][j + 1];
     if (old[i][j]) {
         if (sum <= 1 || sum >= 4) {
-            current[i][j] = false;
+            current[i][j] = '0';
             (*changes)++;
         } else {
-            current[i][j] = true;
+            current[i][j] = '1';
         }
     } else if (sum == 3) {
-        current[i][j] = true;
+        current[i][j] = '1';
         (*changes)++;
     } else {
-        current[i][j] = false;
+        current[i][j] = '0';
     }
-}
-
-void copy(bool **target, bool **source, int n, int m) {
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            target[i][j] = source[i][j];
-        }
-    }
-}
-
-int operate(bool **array, int n, int m) {
-    bool **old_array;
-    old_array = allocate2DArray(TABLE_N, TABLE_M);
-    int left = 0, right = 0;
-    int up = 0, down = 0;
-    int up_left = 0, up_right = 0;
-    int down_left = 0, down_right = 0;
-    int changes = 0;
-
-    copy(old_array, array, n, m);
-
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            left = old_array[i][mod(j - 1, m)];
-            right = old_array[i][mod(j + 1, m)];
-
-            up = old_array[mod(i - 1, n)][j];
-            down = old_array[mod(i + 1, n)][j];
-
-            up_left = old_array[mod(i - 1, n)][mod(j - 1, m)];
-            up_right = old_array[mod(i - 1, n)][mod(j + 1, m)];
-
-            down_left = old_array[mod(i + 1, n)][mod(j - 1, m)];
-            down_right = old_array[mod(i + 1, n)][mod(j + 1, m)];
-
-            int sum = left + right + up_left + up_right + down_left + down_right + up + down;
-
-            if (old_array[i][j]) {
-                if (sum <= 1 || sum >= 4) {
-                    array[i][j] = 0;
-                    changes++;
-                }
-            } else if (sum == 3) {
-                array[i][j] = 1;
-                changes++;
-            }
-        }
-    }
-    free2DArray(old_array, TABLE_N);
-
-    return changes;
 }
