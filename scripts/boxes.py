@@ -1,5 +1,6 @@
-size = 32
-f = open("/home/msi/projects/CLionProjects/game-of-life/mpi/input/32x32.txt", "r")
+import sys
+size = int(sys.argv[1])
+f = open("/home/msi/projects/CLionProjects/game-of-life/mpi/input/input.txt", "r")
 buffer = ""
 buffer += f.read()
 f.close()
@@ -15,6 +16,6 @@ for i in buffer:
         newBuffer += "\u2B1B "
     c += 1
 print(newBuffer)
-f = open("/home/msi/projects/CLionProjects/game-of-life/mpi/input/32x32-boxes.txt", "w")
+f = open("/home/msi/projects/CLionProjects/game-of-life/mpi/input/input-boxes.txt", "w")
 f.write(newBuffer)
 f.close()

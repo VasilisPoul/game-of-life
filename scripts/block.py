@@ -10,7 +10,7 @@ for i in range(0, arraySize):
     else:
         buffer += "0"
 
-name = "/home/msi/projects/CLionProjects/game-of-life/mpi/input/" + arraySizeInput + "x" + arraySizeInput + ".txt"
+name = "/home/msi/projects/CLionProjects/game-of-life/mpi/input/input.txt"
 f = open(name, "w")
 f.write(buffer)
 f.close()

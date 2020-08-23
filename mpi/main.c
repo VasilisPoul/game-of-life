@@ -5,7 +5,7 @@
 #include "mpi.h"
 #include "game_of_life.h"
 
-#define STEPS 100
+#define STEPS 10
 
 int main(int argc, char **argv) {
     int s = 0, i = 0, j = 0, rank, size = 0, workers = 0, root = 0, sum = 0, inputFileNotExists = 0, array_of_sizes[2], array_of_subsizes[2], starts[2];
@@ -48,12 +48,11 @@ int main(int argc, char **argv) {
 
     // Open input file
     inputFileNotExists = MPI_File_open(MPI_COMM_WORLD,
-                                       "/home/msi/projects/CLionProjects/game-of-life/mpi/input/32x32.txt",
+                                       "/home/msi/projects/CLionProjects/game-of-life/mpi/input/input.txt",
                                        MPI_MODE_RDONLY, MPI_INFO_NULL, &inputFile);
 
     if (grid.gridRank == root) {
         block = allocate2DArray(grid.blockDims[0], grid.blockDims[1]);
-        initialize_block(block, true, grid.blockDims[0], grid.blockDims[1]);
     }
 
     if (inputFileNotExists) {
@@ -99,7 +98,12 @@ int main(int argc, char **argv) {
         free(readFileReq);
         free(readFileStatus);
 
+        if (grid.gridRank == root) {
+            initialize_block(block, true, grid.blockDims[0], grid.blockDims[1]);
+        }
+
         gather2DArray(block, old, root, &grid);
+
         if (grid.gridRank == root) {
             printf("block: (file)\n");
             print_array(block, true, true,
@@ -186,21 +190,21 @@ int main(int argc, char **argv) {
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //print_step(s, &grid, old, current);
-        gather2DArray(block, current, root, &grid);
-        for (i = 0; i < grid.processes; i++) {
-            MPI_Barrier(grid.gridComm);
-            if (i == grid.gridRank) {
-                if (grid.gridRank == root) {
-                    printf("block:\n");
-                    print_array(block, true, false,
-                                grid.blockDims[0],
-                                grid.blockDims[1],
-                                grid.localBlockDims[0],
-                                grid.localBlockDims[1]
-                    );
-                }
-            }
-        }
+//        gather2DArray(block, current, root, &grid);
+//        for (i = 0; i < grid.processes; i++) {
+//            MPI_Barrier(grid.gridComm);
+//            if (i == grid.gridRank) {
+//                if (grid.gridRank == root) {
+//                    printf("block: (step)\n");
+//                    print_array(block, true, false,
+//                                grid.blockDims[0],
+//                                grid.blockDims[1],
+//                                grid.localBlockDims[0],
+//                                grid.localBlockDims[1]
+//                    );
+//                }
+//            }
+//        }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -218,7 +222,7 @@ int main(int argc, char **argv) {
         old = current;
         current = temp;
 
-        // Summarize local all local changes
+        // Summarize all local changes
         if (s % 10 == 0) {
             MPI_Allreduce(&grid.stepLocalChanges, &grid.stepGlobalChanges, 1, MPI_INT, MPI_SUM, grid.gridComm);
             if (grid.stepGlobalChanges == 0) {
@@ -236,17 +240,18 @@ int main(int argc, char **argv) {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //End MPI_Wtime
+    // End MPI_Wtime
     end_w_time = MPI_Wtime();
     local_time = end_w_time - start_w_time;
     MPI_Reduce(&local_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, grid.gridComm);
 
-    printf("Worker %d ==> Start Time = %.6f End Time = %.6f Duration = %.9f seconds\n", grid.gridRank, start_w_time,
-           end_w_time, end_w_time - start_w_time);
+    printf("Worker %d ==> Start Time = %.6f End Time = %.6f Duration = %.9f seconds\n",
+           grid.gridRank, start_w_time, end_w_time, end_w_time - start_w_time);
 
-    gather2DArray(block, current, root, &grid);
+    gather2DArray(block, old, root, &grid);
+
     if (grid.gridRank == root) {
-        printf("Result block: (file)\n");
+        printf("Result block:\n");
         print_array(block, true, true,
                     grid.blockDims[0],
                     grid.blockDims[1],
@@ -254,7 +259,7 @@ int main(int argc, char **argv) {
                     grid.localBlockDims[1]
         );
         printf("Steps: %d, Max time: %f\n", s, max_time);
-        free2DArray(block, grid.blockDims[0]);
+        //free2DArray(block, grid.blockDims[0]);
     }
 
     free2DArray(old, grid.localBlockDims[0] + 2);
