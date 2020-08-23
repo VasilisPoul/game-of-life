@@ -5,7 +5,7 @@
 #include "mpi.h"
 #include "game_of_life.h"
 
-#define STEPS 10
+#define STEPS 100
 
 int main(int argc, char **argv) {
     int s = 0, i = 0, j = 0, rank, size = 0, workers = 0, root = 0, sum = 0, inputFileNotExists = 0, array_of_sizes[2], array_of_subsizes[2], starts[2];
@@ -83,9 +83,6 @@ int main(int argc, char **argv) {
         // Read from file
         MPI_File_set_view(inputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
 
-
-
-
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Todo: create datatype instead of loop
         readFileReq = malloc(grid.localBlockDims[0] * sizeof(MPI_Request));
@@ -94,9 +91,6 @@ int main(int argc, char **argv) {
             MPI_File_iread(inputFile, &old[i][1], grid.localBlockDims[1], MPI_CHAR, &readFileReq[i - 1]);
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
 
         // Wait until reading is done
         MPI_Waitall(3, readFileReq, readFileStatus);
@@ -123,10 +117,10 @@ int main(int argc, char **argv) {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Start loop
-    for (s = 0; s < STEPS; s++) {
+    for (s = 1; s <= STEPS; s++) {
 
         // Start receive/send requests
-        if (s % 2 == 0) {
+        if (s % 2) {
             MPI_Startall(8, recv_a_request);
             MPI_Startall(8, send_a_request);
         } else {
@@ -145,7 +139,7 @@ int main(int argc, char **argv) {
         }
 
         // Wait receive requests
-        if (s % 2 == 0) {
+        if (s % 2) {
             MPI_Waitall(8, recv_a_request, recv_a_status);
         } else {
             MPI_Waitall(8, recv_b_request, recv_b_status);
@@ -176,12 +170,6 @@ int main(int argc, char **argv) {
         MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
         MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
 
-
-
-
-
-
-
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Todo: use non-blocking write function
         // Todo: create datatype instead of loop
@@ -194,11 +182,6 @@ int main(int argc, char **argv) {
 //        MPI_File_write(outputFile, &old[0][0], 1, test, &status);
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
 
         MPI_File_close(&outputFile);
 
@@ -216,7 +199,7 @@ int main(int argc, char **argv) {
         }
 
         // Wait send requests
-        if (s % 2 == 0) {
+        if (s % 2) {
             MPI_Waitall(8, send_a_request, send_a_status);
         } else {
             MPI_Waitall(8, send_b_request, send_b_status);
