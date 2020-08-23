@@ -1,7 +1,7 @@
 import sys
 
 size = int(sys.argv[1])
-f = open("/home/msi/projects/CLionProjects/game-of-life/mpi/input/input.txt", "r")
+f = open(sys.argv[2], "r")
 buffer = ""
 buffer += f.read()
 f.close()
@@ -17,6 +17,6 @@ for i in buffer:
     if c % int(size) == 0:
         newBuffer += "\n"
 
-f = open("/home/msi/projects/CLionProjects/game-of-life/mpi/input/input-boxes.txt", "w")
+f = open(sys.argv[3], "w")
 f.write(newBuffer)
 f.close()
