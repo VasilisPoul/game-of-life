@@ -17,19 +17,19 @@
 
 
 char **allocate2DArray(int rows, int columns) {
-    char **array;
+    char **block;
     int i = 0;
-    array = malloc(rows * sizeof(char *));
-    array[0] = malloc(rows * columns * sizeof(char));
+    block = malloc(rows * sizeof(char *));
+    block[0] = malloc(rows * columns * sizeof(char));
     for (i = 1; i < rows; i++) {
-        array[i] = &(array[0][i * rows]);
+        block[i] = &(block[0][i * rows]);
     }
-    return array;
+    return block;
 }
 
-void free2DArray(char **array, int rows) {
-    free(array[0]);
-    free(array);
+void free2DArray(char **block, int rows) {
+    free(block[0]);
+    free(block);
 }
 
 int mod(int x, int m) {

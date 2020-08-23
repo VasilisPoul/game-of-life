@@ -8,7 +8,7 @@
 
 char **allocate2DArray(int rows, int columns);
 
-void free2DArray(char **array, int rows);
+void free2DArray(char **block, int rows);
 
 void initialize_block(char **block, bool zeroFill, int n, int m);
 
