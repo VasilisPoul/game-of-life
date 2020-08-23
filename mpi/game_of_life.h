@@ -3,14 +3,14 @@
 
 #include <stdbool.h>
 
-#define TABLE_N 12
-#define TABLE_M 12
+#define TABLE_N 32
+#define TABLE_M 32
 
 char **allocate2DArray(int rows, int columns);
 
 void free2DArray(char **array, int rows);
 
-void initialize_block(char **block, int n, int m);
+void initialize_block(char **block, bool zeroFill, int n, int m);
 
 void print_array(char **array, bool split, bool internals, int rowDim, int colDim, int localRowDim, int localColDim);
 

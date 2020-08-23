@@ -62,20 +62,28 @@ void print_array(char **array, bool split, bool internals, int rowDim, int colDi
 }
 
 
-void initialize_block(char **block, int n, int m) {
+void initialize_block(char **block, bool zeroFill, int n, int m) {
     srand(time(NULL));
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
-            block[i][j] = rand() % 2 == 0 ? '0' : '1';
+            block[i][j] = zeroFill ? '0' : rand() % 2 == 0 ? '0' : '1';
         }
     }
 }
 
 // Inline calculate
 inline void calculate(char **old, char **current, int i, int j, int *changes) {
-    int sum = old[i - 1][j - 1] + old[i - 1][j] + old[i - 1][j + 1] + old[i][j - 1] +
-              old[i][j + 1] + old[i + 1][j - 1] + old[i + 1][j] + old[i + 1][j + 1];
-    if (old[i][j]) {
+    int sum = (old[i - 1][j - 1] - 48) +
+              (old[i - 1][j] - 48) +
+              (old[i - 1][j + 1] - 48) +
+              (old[i][j - 1] - 48) +
+              (old[i][j + 1] - 48) +
+              (old[i + 1][j - 1] - 48) +
+              (old[i + 1][j] - 48) +
+              (old[i + 1][j + 1] - 48);
+
+    // Is alive
+    if ((old[i][j]) == '1') {
         if (sum <= 1 || sum >= 4) {
             current[i][j] = '0';
             (*changes)++;
