@@ -160,3 +160,7 @@ main
 launch.json
 
 # End of https://www.gitignore.io/api/c,clion,visualstudiocode
+
+/mpi/generations/*
+/mpi/input/*
+/venv/
