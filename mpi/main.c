@@ -5,7 +5,7 @@
 #include "mpi.h"
 #include "game_of_life.h"
 
-#define STEPS 1000
+#define STEPS 1
 
 int main(int argc, char **argv) {
     int s = 0, i = 0, j = 0, rank, size = 0, workers = 0, root = 0, sum = 0, inputFileNotExists = 0, array_of_sizes[2], array_of_subsizes[2], starts[2];
@@ -130,16 +130,8 @@ int main(int argc, char **argv) {
     start_w_time = MPI_Wtime();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     // Start loop
     for (s = 0; s < STEPS; s++) {
-
-        // Create generation file for current step
-        if (grid.gridRank == root) {
-            sprintf(buffer, "/home/msi/projects/CLionProjects/game-of-life/mpi/generations/step-%d.txt", s);
-            MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL, &outputFile);
-            MPI_File_close(&outputFile);
-        }
 
         // Start receive/send requests
         if (s % 2 == 0) {
@@ -188,6 +180,7 @@ int main(int argc, char **argv) {
 
 
 
+
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //print_step(s, &grid, old, current);
 //        gather2DArray(block, current, root, &grid);
@@ -207,13 +200,12 @@ int main(int argc, char **argv) {
 //        }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-        // Write current in file
-        MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
+        // Create & write generation file
+        sprintf(buffer, "/home/msi/projects/CLionProjects/game-of-life/mpi/generations/step-%d.txt", s);
+        MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
         MPI_File_set_view(outputFile, 0, MPI_CHAR, subType, "native", MPI_INFO_NULL);
         for (i = 1; i <= grid.localBlockDims[0]; i++) {
-            MPI_File_write_all(outputFile, &current[i][1], grid.localBlockDims[0], MPI_CHAR, &status);
+            MPI_File_write(outputFile, &current[i][1], grid.localBlockDims[0], MPI_CHAR, &status);
         }
         MPI_File_close(&outputFile);
 
