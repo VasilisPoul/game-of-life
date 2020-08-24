@@ -68,10 +68,11 @@ int main(int argc, char **argv) {
                         grid.localBlockDims[0],
                         grid.localBlockDims[1]
             );
-
-            // Scatter block
-            scatter2DArray(block, old, root, &grid);
         }
+
+        // Scatter block
+        scatter2DArray(block, old, root, &grid);
+
     } else {
         // Read from file
         MPI_File_set_view(inputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
