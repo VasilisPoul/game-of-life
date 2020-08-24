@@ -164,3 +164,4 @@ launch.json
 /mpi/generations/boxes/*
 /mpi/generations/row/*
 /venv/
+/mpi/.gdb_history

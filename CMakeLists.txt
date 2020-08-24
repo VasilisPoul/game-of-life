@@ -10,6 +10,9 @@ SET(CMAKE_CXX_COMPILER mpicxx)
 set(SOURCE_FILES mpi/main.c mpi/mpi.c mpi/game_of_life.c)
 #set(SOURCE_FILES serial/main.c serial/game_of_life.c)
 
+#add_compile_options(-g -c -Wall -O3)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -c -Wall -O3")
+
 add_executable(game_of_life ${SOURCE_FILES})
 
 target_link_libraries(game_of_life m)
