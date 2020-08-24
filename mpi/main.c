@@ -5,17 +5,17 @@
 #include "mpi.h"
 #include "game_of_life.h"
 
-#define STEPS 100
+#define STEPS 1000
 
 int main(int argc, char **argv) {
-    int s = 0, i = 0, j = 0, rank, size = 0, workers = 0, root = 0, sum = 0, inputFileNotExists = 0, array_of_sizes[2], array_of_subsizes[2], starts[2];
+    int s = 0, i = 0, j = 0, rank, size = 0, root = 0, inputFileNotExists = 0, starts[2];
     double start_w_time = 0.0, end_w_time = 0.0, local_time = 0.0, max_time = 0.0;
     char **block = NULL, **old = NULL, **current = NULL, **temp = NULL, buffer[100];
     MPI_Datatype colType, rowType, subArrayType;
     MPI_Request send_a_request[8], recv_a_request[8], send_b_request[8], recv_b_request[8];
     MPI_Status send_a_status[8], send_b_status[8], recv_a_status[8], recv_b_status[8];
     MPI_Status status, *readFileStatus;
-    MPI_Request *readFileReq;
+    MPI_Request *readFileRequests, writeFileRequest;
     MPI_File inputFile, outputFile;
     GridInfo grid;
 
@@ -47,16 +47,9 @@ int main(int argc, char **argv) {
     MPI_Type_commit(&colType);
 
     // Create subArrayType
-    array_of_sizes[0] = grid.blockDims[0];
-    array_of_sizes[1] = grid.blockDims[1];
-
-    array_of_subsizes[0] = grid.localBlockDims[0];
-    array_of_subsizes[1] = grid.localBlockDims[1];
-
     starts[0] = grid.gridCoords[0] * grid.localBlockDims[0];
     starts[1] = grid.gridCoords[1] * grid.localBlockDims[1];
-
-    MPI_Type_create_subarray(2, array_of_sizes, array_of_subsizes, starts, MPI_ORDER_C, MPI_CHAR, &subArrayType);
+    MPI_Type_create_subarray(2, grid.blockDims, grid.localBlockDims, starts, MPI_ORDER_C, MPI_CHAR, &subArrayType);
     MPI_Type_commit(&subArrayType);
 
     // Open input file
@@ -75,29 +68,25 @@ int main(int argc, char **argv) {
                         grid.localBlockDims[0],
                         grid.localBlockDims[1]
             );
-        }
 
-        // Scatter block
-        scatter2DArray(block, old, root, &grid);
+            // Scatter block
+            scatter2DArray(block, old, root, &grid);
+        }
     } else {
         // Read from file
         MPI_File_set_view(inputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Todo: create datatype instead of loop
-        readFileReq = malloc(grid.localBlockDims[0] * sizeof(MPI_Request));
+        readFileRequests = malloc(grid.localBlockDims[0] * sizeof(MPI_Request));
         readFileStatus = malloc(grid.localBlockDims[0] * sizeof(MPI_Status));
         for (i = 1; i <= grid.localBlockDims[0]; i++) {
-            MPI_File_iread(inputFile, &old[i][1], grid.localBlockDims[1], MPI_CHAR, &readFileReq[i - 1]);
+            MPI_File_iread(inputFile, &old[i][1], grid.localBlockDims[1], MPI_CHAR, &readFileRequests[i - 1]);
         }
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Wait until reading is done
-        MPI_Waitall(3, readFileReq, readFileStatus);
+        MPI_Waitall(3, readFileRequests, readFileStatus);
 
         MPI_File_close(&inputFile);
 
-        free(readFileReq);
+        free(readFileRequests);
         free(readFileStatus);
     }
 
@@ -169,20 +158,10 @@ int main(int argc, char **argv) {
         sprintf(buffer, "/home/msi/projects/CLionProjects/game-of-life/mpi/generations/row/step-%d.txt", s);
         MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
         MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Todo: use non-blocking write function
-        // Todo: create datatype instead of loop
         for (i = 1; i <= grid.localBlockDims[0]; i++) {
-            MPI_File_write(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &status);
+            MPI_File_iwrite(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &writeFileRequest);
+            MPI_Wait(&writeFileRequest, &status);
         }
-//        MPI_Datatype test;
-//        MPI_Type_contiguous(grid.localBlockDims[0] * grid.localBlockDims[1], MPI_CHAR, &test);
-//        MPI_Type_commit(&test);
-//        MPI_File_write(outputFile, &old[0][0], 1, test, &status);
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
         MPI_File_close(&outputFile);
 
         // Swap local blocks
@@ -216,11 +195,11 @@ int main(int argc, char **argv) {
            grid.gridRank, start_w_time, end_w_time, end_w_time - start_w_time);
 
     if (grid.gridRank == root) {
-        printf("Steps: %d, Max time: %f\n", s, max_time);
+        printf("Steps: %d, Max time: %f\n", s - 1, max_time);
         if (inputFileNotExists) {
             free2DArray(block, grid.blockDims[0]);
         }
-        system("/home/msi/projects/CLionProjects/game-of-life/scripts/after-run.sh");
+        system("/home/msi/projects/CLionProjects/game-of-life/scripts/boxes.sh");
     }
 
     free2DArray(old, grid.localBlockDims[0] + 2);
