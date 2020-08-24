@@ -14,8 +14,10 @@ int main(int argc, char **argv) {
     MPI_Datatype colType, rowType, subArrayType;
     MPI_Request send_a_request[8], recv_a_request[8], send_b_request[8], recv_b_request[8];
     MPI_Status send_a_status[8], send_b_status[8], recv_a_status[8], recv_b_status[8];
-    MPI_Status status, *readFileStatus;
-    MPI_Request *readFileRequests, writeFileRequest;
+
+    MPI_Request *fileRequests;
+    MPI_Status *fileStatus;
+
     MPI_File inputFile, outputFile;
     GridInfo grid;
 
@@ -29,6 +31,9 @@ int main(int argc, char **argv) {
     // Allocate local blocks
     old = allocate2DArray(grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2);
     current = allocate2DArray(grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2);
+
+    fileRequests = malloc(grid.localBlockDims[0] * sizeof(MPI_Request));
+    fileStatus = malloc(grid.localBlockDims[0] * sizeof(MPI_Status));
 
     // Initialize local blocks
     for (i = 0; i < grid.localBlockDims[0] + 2; i++) {
@@ -69,26 +74,20 @@ int main(int argc, char **argv) {
                         grid.localBlockDims[1]
             );
         }
-
         // Scatter block
         scatter2DArray(block, old, root, &grid);
 
     } else {
         // Read from file
         MPI_File_set_view(inputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
-        readFileRequests = malloc(grid.localBlockDims[0] * sizeof(MPI_Request));
-        readFileStatus = malloc(grid.localBlockDims[0] * sizeof(MPI_Status));
         for (i = 1; i <= grid.localBlockDims[0]; i++) {
-            MPI_File_iread(inputFile, &old[i][1], grid.localBlockDims[1], MPI_CHAR, &readFileRequests[i - 1]);
+            MPI_File_iread(inputFile, &old[i][1], grid.localBlockDims[1], MPI_CHAR, &fileRequests[i - 1]);
         }
-
         // Wait until reading is done
-        MPI_Waitall(3, readFileRequests, readFileStatus);
+        MPI_Waitall(grid.localBlockDims[0], fileRequests, fileStatus);
 
+        // Close file
         MPI_File_close(&inputFile);
-
-        free(readFileRequests);
-        free(readFileStatus);
     }
 
     // Initialize send/receive requests for old local block
@@ -160,9 +159,14 @@ int main(int argc, char **argv) {
         MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
         MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
         for (i = 1; i <= grid.localBlockDims[0]; i++) {
-            MPI_File_iwrite(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &writeFileRequest);
-            MPI_Wait(&writeFileRequest, &status);
+            MPI_File_iwrite(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &fileRequests[i - 1]);
+            //MPI_Wait(&fileRequests[i - 1], &fileStatus[i - 1]);
         }
+
+        // Wait until reading is done
+        MPI_Waitall(grid.localBlockDims[0], fileRequests, fileStatus);
+
+        // Close file
         MPI_File_close(&outputFile);
 
         // Swap local blocks
@@ -205,6 +209,8 @@ int main(int argc, char **argv) {
 
     free2DArray(old, grid.localBlockDims[0] + 2);
     free2DArray(current, grid.localBlockDims[0] + 2);
+    free(fileRequests);
+    free(fileStatus);
 
     MPI_Comm_free(&grid.gridComm);
     MPI_Finalize();
