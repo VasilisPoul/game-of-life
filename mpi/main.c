@@ -160,13 +160,12 @@ int main(int argc, char **argv) {
         MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
         for (i = 1; i <= grid.localBlockDims[0]; i++) {
             MPI_File_iwrite(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &fileRequests[i - 1]);
-            //MPI_Wait(&fileRequests[i - 1], &fileStatus[i - 1]);
         }
 
-        // Wait until reading is done
+        // Wait until writing is done
         MPI_Waitall(grid.localBlockDims[0], fileRequests, fileStatus);
 
-        // Close file
+        // Close generation file
         MPI_File_close(&outputFile);
 
         // Swap local blocks
