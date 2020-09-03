@@ -19,7 +19,7 @@
 
 char **allocate2DArray(int rows, int columns) {
     char **block;
-    int i = 0;
+    int i;
     block = malloc(rows * sizeof(char *));
     block[0] = malloc(rows * columns * sizeof(char));
     for (i = 1; i < rows; i++) {

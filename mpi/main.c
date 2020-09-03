@@ -59,16 +59,11 @@ int main(int argc, char **argv) {
             block = allocate2DArray(grid.blockDims[0], grid.blockDims[1]);
             initialize_block(block, false, grid.blockDims[0], grid.blockDims[1]);
             printf("block: (memory)\n");
-            print_array(block, true, true,
-                        grid.blockDims[0],
-                        grid.blockDims[1],
-                        grid.localBlockDims[0],
-                        grid.localBlockDims[1]
-            );
+            print_array(block, true, true, grid.blockDims[0], grid.blockDims[1], grid.localBlockDims[0],
+                        grid.localBlockDims[1]);
         }
         // Scatter block
         scatter2DArray(block, old, root, &grid);
-
     } else {
         // Read from file
         MPI_File_set_view(inputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
@@ -77,7 +72,6 @@ int main(int argc, char **argv) {
         }
         // Wait until reading is done
         MPI_Waitall(grid.localBlockDims[0], fileRequests, fileStatus);
-
         // Close file
         MPI_File_close(&inputFile);
     }
@@ -95,6 +89,7 @@ int main(int argc, char **argv) {
 
     // Start MPI_Wtime
     start_w_time = MPI_Wtime();
+    MPI_Pcontrol(1);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Start loop
@@ -146,6 +141,8 @@ int main(int argc, char **argv) {
             calculate(old, current, i, grid.localBlockDims[1], &grid.stepLocalChanges);
         }
 
+        print_step(s, &grid, old, current);
+
         // Create & write generation file
         sprintf(buffer, "/home/msi/projects/CLionProjects/game-of-life/mpi/generations/row/step-%d.txt", s);
         MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
@@ -184,6 +181,8 @@ int main(int argc, char **argv) {
 
     // End MPI_Wtime
     end_w_time = MPI_Wtime();
+    MPI_Pcontrol(0);
+
     local_time = end_w_time - start_w_time;
     MPI_Reduce(&local_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, grid.gridComm);
 
