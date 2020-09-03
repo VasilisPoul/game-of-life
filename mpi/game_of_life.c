@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
+#include <string.h>
 #include "game_of_life.h"
 
 /*COLOR*/
@@ -24,6 +25,7 @@ char **allocate2DArray(int rows, int columns) {
     for (i = 1; i < rows; i++) {
         block[i] = &(block[0][i * rows]);
     }
+    memset(block[0], (int) '0', rows * columns * sizeof(char));
     return block;
 }
 

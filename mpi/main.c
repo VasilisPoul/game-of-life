@@ -35,14 +35,6 @@ int main(int argc, char **argv) {
     fileRequests = malloc(grid.localBlockDims[0] * sizeof(MPI_Request));
     fileStatus = malloc(grid.localBlockDims[0] * sizeof(MPI_Status));
 
-    // Initialize local blocks
-    for (i = 0; i < grid.localBlockDims[0] + 2; i++) {
-        for (j = 0; j < grid.localBlockDims[1] + 2; j++) {
-            old[i][j] = '0';
-            current[i][j] = '0';
-        }
-    }
-
     // rowType
     MPI_Type_vector(1, grid.localBlockDims[1], 0, MPI_CHAR, &rowType);
     MPI_Type_commit(&rowType);
