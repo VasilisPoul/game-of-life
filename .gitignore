@@ -150,6 +150,7 @@ fabric.properties
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/c_cpp_properties.json
 
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
@@ -157,7 +158,7 @@ fabric.properties
 
 game_of_life
 main
-launch.json
+
 
 # End of https://www.gitignore.io/api/c,clion,visualstudiocode
 

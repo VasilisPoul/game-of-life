@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "shell",
+        "label": "mpicc build active file",
+        "command": "/usr/bin/mpicc",
+        "args": [
+          "-g",
+          "/home/vasilis/projects/game-of-life/mpi/main.c",
+          "/home/vasilis/projects/game-of-life/mpi/game_of_life.c",
+          "/home/vasilis/projects/game-of-life/mpi/mpi.c",
+          "-o",
+          "/home/vasilis/projects/game-of-life/mpi/game_of_life",
+          "-Wall",
+          "-O3",
+          "-lm",
+        ],
+        "options": {
+          "cwd": "${workspaceFolder}"
+        },
+        "problemMatcher": ["$gcc"],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      }
+    ]
+  }

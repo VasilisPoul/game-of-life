@@ -5,7 +5,7 @@
 #include "mpi.h"
 #include "game_of_life.h"
 
-#define STEPS 1000
+#define STEPS 10
 
 int main(int argc, char **argv) {
     int s = 0, i = 0, j = 0, rank, size = 0, root = 0, inputFileNotExists = 0, starts[2];
@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 
     MPI_File inputFile, outputFile;
     GridInfo grid;
-
+    //
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 
     // Open input file
     inputFileNotExists = MPI_File_open(MPI_COMM_WORLD,
-                                       "/home/msi/projects/CLionProjects/game-of-life/mpi/generations/row/input.txt",
+                                       "/home/vasilis/projects/game-of-life/mpi/generations/row/input.txt",
                                        MPI_MODE_RDONLY, MPI_INFO_NULL, &inputFile);
     if (inputFileNotExists) {
         // No file, generate array
@@ -141,10 +141,10 @@ int main(int argc, char **argv) {
             calculate(old, current, i, grid.localBlockDims[1], &grid.stepLocalChanges);
         }
 
-        print_step(s, &grid, old, current);
+        //print_step(s, &grid, old, current);
 
         // Create & write generation file
-        sprintf(buffer, "/home/msi/projects/CLionProjects/game-of-life/mpi/generations/row/step-%d.txt", s);
+        sprintf(buffer, "/home/vasilis/projects/game-of-life/mpi/generations/row/step-%d.txt", s);
         MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
         MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
         for (i = 1; i <= grid.localBlockDims[0]; i++) {
@@ -194,7 +194,7 @@ int main(int argc, char **argv) {
         if (inputFileNotExists) {
             free2DArray(block, grid.blockDims[0]);
         }
-        system("/home/msi/projects/CLionProjects/game-of-life/scripts/boxes.sh");
+        system("/home/vasilis/projects/game-of-life/scripts/boxes.sh");
     }
 
     free2DArray(old, grid.localBlockDims[0] + 2);
