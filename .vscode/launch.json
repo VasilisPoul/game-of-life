@@ -7,7 +7,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/usr/bin/mpirun",
-            "args": ["-np", "1", "/home/vasilis/projects/game-of-life/mpi/game_of_life"],
+            "args": ["-np", "1", "/home/vasilis/projects/game-of-life/mpi+openmp/game_of_life"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
