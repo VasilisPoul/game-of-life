@@ -12,6 +12,7 @@
           "/home/vasilis/projects/game-of-life/mpi+openmp/mpi.c",
           "-o",
           "/home/vasilis/projects/game-of-life/mpi+openmp/game_of_life",
+          "-fopenmp",
           "-Wall",
           "-O3",
           "-lm",

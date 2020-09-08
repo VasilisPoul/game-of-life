@@ -1,13 +1,58 @@
+// {
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "name": "(mpirun) Launch",
+//             "preLaunchTask": "mpicc build active file",
+//             "type": "cppdbg",
+//             "request": "launch",
+//             "program": "/usr/bin/mpirun",
+//             "args": ["-np", "1", "/home/vasilis/projects/game-of-life/mpi+openmp/game_of_life"],
+//             "stopAtEntry": false,
+//             "cwd": "${workspaceFolder}",
+//             "environment": [],
+//             "externalConsole": false,
+            
+//         }
+//     ]
+// }
+
 {
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(mpirun) Launch",
+            "name": "game_of_life",
+            "preLaunchTask": "mpicc build active file",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/vasilis/projects/game-of-life/mpi+openmp/game_of_life",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            
+        },
+        {
+            "name": "(mpirun -np 1) Launch",
             "preLaunchTask": "mpicc build active file",
             "type": "cppdbg",
             "request": "launch",
             "program": "/usr/bin/mpirun",
             "args": ["-np", "1", "/home/vasilis/projects/game-of-life/mpi+openmp/game_of_life"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            
+        },
+        {
+            "name": "(mpirun -np 16) Launch",
+            "preLaunchTask": "mpicc build active file",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/usr/bin/mpirun",
+            "args": ["-np", "16", "/home/vasilis/projects/game-of-life/mpi+openmp/game_of_life"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
