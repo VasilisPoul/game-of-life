@@ -93,13 +93,14 @@ int main(int argc, char **argv) {
     MPI_Pcontrol(1);
 
 
-    #pragma omp parallel num_threads(4) private (i,s)
+ 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Start loop ...
+    #pragma omp parallel num_threads(4) private (i,s)
     for (s = 1; s <= STEPS; s++) {
-        #pragma omp master
 
         // Start receive/send requests
+        #pragma omp master
         if (s % 2) {
             MPI_Startall(8, recv_a_request);
             MPI_Startall(8, send_a_request);
@@ -114,41 +115,45 @@ int main(int argc, char **argv) {
 
 
         // Calculate internals
+        #pragma omp parallel for collapse(2)
         for (i = 2; i < grid.localBlockDims[0]; i++) {
-            #pragma omp for
             for (j = 2; j < grid.localBlockDims[1]; j++) {
                 calculate(old, current, i, j, &grid.stepLocalChanges);
             }
         }
 
-        #pragma omp master
         // Wait receive requests
+        #pragma omp master
         if (s % 2) {
             MPI_Waitall(8, recv_a_request, recv_a_status);
         } else {
             MPI_Waitall(8, recv_b_request, recv_b_status);
         }
 
-        #pragma omp for
+        
         // Calculate up row
+        #pragma omp parallel for
         for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
             calculate(old, current, 1, i, &grid.stepLocalChanges);
         }
 
-        #pragma omp for
+        
         // Calculate down row
+        #pragma omp parallel for
         for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
             calculate(old, current, grid.localBlockDims[0], i, &grid.stepLocalChanges);
         }
 
-        #pragma omp for
+        
         // Calculate left Column
+        #pragma omp parallel for
         for (i = 2; i < grid.localBlockDims[0]; i++) {
             calculate(old, current, i, 1, &grid.stepLocalChanges);
         }
 
-        #pragma omp for
+        
         // Calculate right column
+        #pragma omp parallel for
         for (i = 2; i < grid.localBlockDims[0]; i++) {
             calculate(old, current, i, grid.localBlockDims[1], &grid.stepLocalChanges);
         }
@@ -191,8 +196,9 @@ int main(int argc, char **argv) {
         // }
 
 
-        #pragma omp master
+        
         // Wait send requests
+        #pragma omp master
         if (s % 2) {
             MPI_Waitall(8, send_a_request, send_a_status);
         } else {
