@@ -5,7 +5,7 @@
 #include "mpi.h"
 #include "game_of_life.h"
 
-#define STEPS 1
+#define STEPS 1000
 
 int main(int argc, char **argv) {
     int s = 0, i = 0, j = 0, rank, size = 0, root = 0, inputFileNotExists = 0, starts[2];
@@ -141,19 +141,28 @@ int main(int argc, char **argv) {
 
         //print_step(s, &grid, old, current);
 
+
+
+
+
         // Create & write generation file
-        sprintf(buffer, "generations/row/step-%d.txt", s);
-        MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
-        MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
-        for (i = 1; i <= grid.localBlockDims[0]; i++) {
-            MPI_File_iwrite(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &fileRequests[i - 1]);
-        }
+        // sprintf(buffer, "generations/row/step-%d.txt", s);
+        // MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
+        // MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
+        // for (i = 1; i <= grid.localBlockDims[0]; i++) {
+        //     MPI_File_iwrite(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &fileRequests[i - 1]);
+        // }
 
         // Wait until writing is done
-        MPI_Waitall(grid.localBlockDims[0], fileRequests, fileStatus);
+        //MPI_Waitall(grid.localBlockDims[0], fileRequests, fileStatus);
 
         // Close generation file
-        MPI_File_close(&outputFile);
+        //MPI_File_close(&outputFile);
+
+
+
+
+
 
         // Swap local blocks
         temp = old;
@@ -192,7 +201,6 @@ int main(int argc, char **argv) {
         if (inputFileNotExists) {
             free2DArray(block, grid.blockDims[0]);
         }
-        system("scripts/boxes.sh");
     }
 
     free2DArray(old, grid.localBlockDims[0] + 2);

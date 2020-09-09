@@ -1,14 +1,18 @@
 #!/bin/bash
 
-rm *.mpiP a.* core.*
+rm *.mpiP golJob.* core.* *.x
 
 module load mpiP
 
-mpicc -O3 -g game_of_life.c main.c mpi.c -L$MPIP_DIR/lib -lmpiP -lbfd -lunwind -lm -Wall -o game_of_life.x
+rm -f generations/row/*
+rm -f generations/boxes/*
+python3 scripts/block.py 32 generations/row/input.txt
 
-select=1
-ncpus=1
-mpiprocs=1
+mpicc -O3 -g game_of_life.c main.c mpi.c -L$MPIP_DIR/lib -lmpiP -lm -Wall -o game_of_life.x
+
+select=2
+ncpus=8
+mpiprocs=16
 echo "Setting select to "$select
 echo "Setting ncpus to "$ncpus
 echo "Setting mpiprocs to "$mpiprocs
