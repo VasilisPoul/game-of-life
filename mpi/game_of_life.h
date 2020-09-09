@@ -3,9 +3,6 @@
 
 #include <stdbool.h>
 
-#define TABLE_N 32
-#define TABLE_M 32
-
 char **allocate2DArray(int rows, int columns);
 
 void free2DArray(char **block, int rows);

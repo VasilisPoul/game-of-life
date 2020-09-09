@@ -2,13 +2,16 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <getopt.h>
+
 #include "mpi.h"
 #include "game_of_life.h"
 
 #define STEPS 1000
 
 int main(int argc, char **argv) {
-    int s = 0, i = 0, j = 0, rank, size = 0, root = 0, inputFileNotExists = 0, starts[2];
+    int s = 0, i = 0, j = 0, rank, size = 0, root = 0, inputFileNotExists = 0, starts[2], opt, rows, cols;
     double start_w_time = 0.0, end_w_time = 0.0, local_time = 0.0, max_time = 0.0;
     char **block = NULL, **old = NULL, **current = NULL, **temp = NULL, buffer[100];
     MPI_Datatype colType, rowType, subArrayType;
@@ -20,13 +23,36 @@ int main(int argc, char **argv) {
 
     MPI_File inputFile, outputFile;
     GridInfo grid;
-    //
+     
     MPI_Init(&argc, &argv);
+
+    while ((opt = getopt(argc, argv, "r:c:")) != -1) {
+        switch (opt) {
+        case 'r':
+            rows = atoi(optarg);
+            break;
+        case 'c':
+            cols = atoi(optarg);
+            break;
+        default: /* '?' */
+            fprintf(stderr, "Usage: %s [-r] number of rows [-c] number of columns\n",
+                    argv[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
+    
+    if (argc != 5){
+        fprintf(stderr, "Usage: %s [-r] number of rows [-c] number of columns\n",
+                    argv[0]);
+        exit(EXIT_FAILURE);
+    }
+    
+    //
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     // TODO: Setup grid dimensions & local array dimensions based on blockDims[0], M, W parameters.
-    setupGrid(&grid, TABLE_N, TABLE_M);
+    setupGrid(&grid, rows, cols);
 
     // Allocate local blocks
     old = allocate2DArray(grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2);
@@ -141,28 +167,15 @@ int main(int argc, char **argv) {
 
         //print_step(s, &grid, old, current);
 
-
-
-
-
         // Create & write generation file
         // sprintf(buffer, "generations/row/step-%d.txt", s);
         // MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
         // MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
         // for (i = 1; i <= grid.localBlockDims[0]; i++) {
-        //     MPI_File_iwrite(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &fileRequests[i - 1]);
+        //     MPI_File_write_all(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &fileStatus[i - 1]);
         // }
-
-        // Wait until writing is done
-        //MPI_Waitall(grid.localBlockDims[0], fileRequests, fileStatus);
-
         // Close generation file
-        //MPI_File_close(&outputFile);
-
-
-
-
-
+        // MPI_File_close(&outputFile);
 
         // Swap local blocks
         temp = old;

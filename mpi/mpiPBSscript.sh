@@ -15,8 +15,8 @@
 # JobName #
 #PBS -N golJob
 
-#Change Working directory to SUBMIT directory
+#Change Working directory to SUBMIT director
 cd $PBS_O_WORKDIR
 
 # Run executable #
-mpirun -np $proc game_of_life.x
+mpirun -np $proc game_of_life -r $rows -c $cols 
