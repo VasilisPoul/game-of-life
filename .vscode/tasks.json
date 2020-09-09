@@ -3,6 +3,11 @@
     "tasks": [
       {
         "type": "shell",
+        "label": "prepare",
+        "command": "/home/vasilis/projects/game-of-life/scripts/prepare-build.sh",
+      },
+      {
+        "type": "shell",
         "label": "mpicc build active file",
         "command": "/usr/bin/mpicc",
         "args": [
@@ -12,6 +17,7 @@
           "/home/vasilis/projects/game-of-life/mpi+openmp/mpi.c",
           "-o",
           "/home/vasilis/projects/game-of-life/mpi+openmp/game_of_life",
+          "-fopenmp",
           "-Wall",
           "-O3",
           "-lm",
@@ -23,7 +29,8 @@
         "group": {
           "kind": "build",
           "isDefault": true
-        }
+        },
+        "dependsOn" : "prepare"
       }
     ]
   }

@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 
-#define TABLE_N 32
-#define TABLE_M 32
+#define TABLE_N 960
+#define TABLE_M 960
 
 char **allocate2DArray(int rows, int columns);
 
