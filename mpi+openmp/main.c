@@ -6,7 +6,7 @@
 #include "game_of_life.h"
 #include <omp.h>
 
-#define STEPS 10
+#define STEPS 1000
 
 int main(int argc, char **argv) {
     int s = 0, i = 0, j = 0, rank, size = 0, root = 0, inputFileNotExists = 0, starts[2];
