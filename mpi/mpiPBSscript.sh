@@ -19,4 +19,4 @@
 cd $PBS_O_WORKDIR
 
 # Run executable #
-mpirun -np $proc game_of_life -r $rows -c $cols 
+mpirun -np $proc game_of_life -i $inputFilePath -f $outputFolder -r $rows -c $cols 

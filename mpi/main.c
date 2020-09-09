@@ -177,14 +177,14 @@ int main(int argc, char **argv) {
         //print_step(s, &grid, old, current);
 
         // Create & write generation file
-         sprintf(buffer, "%sstep-%d.txt", outputFolder, s);
-         MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
-         MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
-         for (i = 1; i <= grid.localBlockDims[0]; i++) {
-             MPI_File_write_all(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &fileStatus[i - 1]);
-         }
-         // Close generation file
-         MPI_File_close(&outputFile);
+        //  sprintf(buffer, "%sstep-%d.txt", outputFolder, s);
+        //  MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
+        //  MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
+        //  for (i = 1; i <= grid.localBlockDims[0]; i++) {
+        //      MPI_File_write_all(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &fileStatus[i - 1]);
+        //  }
+        //  // Close generation file
+        //  MPI_File_close(&outputFile);
 
         // Swap local blocks
         temp = old;
