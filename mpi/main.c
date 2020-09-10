@@ -11,7 +11,7 @@
 #define STEPS 1000
 
 int main(int argc, char **argv) {
-    int s = 0, i = 0, j = 0, rank, size = 0, root = 0, inputFileNotExists = 0, starts[2], opt, rows, cols;
+    int s = 0, i = 0, j = 0, rank, size = 0, root = 0, inputFileNotExists = 0, starts[2], opt = 0, rows = 0, cols = 0;
     double start_w_time = 0.0, end_w_time = 0.0, local_time = 0.0, max_time = 0.0;
     char **block = NULL, **old = NULL, **current = NULL, **temp = NULL, buffer[100], *inputFilePath = NULL, *outputFolder = NULL;
     MPI_Datatype colType, rowType, subArrayType;
