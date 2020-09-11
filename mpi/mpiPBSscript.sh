@@ -12,9 +12,6 @@
 # Which Queue to use, DO NOT CHANGE #
 #PBS -q workq
 
-# JobName #
-#PBS -N golJob
-
 #Change Working directory to SUBMIT director
 cd $PBS_O_WORKDIR
 

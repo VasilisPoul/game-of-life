@@ -4,7 +4,7 @@
       {
         "type": "shell",
         "label": "prepare",
-        "command": "/home/vasilis/projects/game-of-life/scripts/prepare-build.sh",
+        "command": "/home/vasilis/projects/game-of-life/mpi/scripts/prepare-build.sh",
       },
       {
         "type": "shell",
@@ -12,11 +12,11 @@
         "command": "/usr/bin/mpicc",
         "args": [
           "-g",
-          "/home/vasilis/projects/game-of-life/mpi+openmp/main.c",
-          "/home/vasilis/projects/game-of-life/mpi+openmp/game_of_life.c",
-          "/home/vasilis/projects/game-of-life/mpi+openmp/mpi.c",
+          "/home/vasilis/projects/game-of-life/mpi/main.c",
+          "/home/vasilis/projects/game-of-life/mpi/game_of_life.c",
+          "/home/vasilis/projects/game-of-life/mpi/mpi.c",
           "-o",
-          "/home/vasilis/projects/game-of-life/mpi+openmp/game_of_life",
+          "/home/vasilis/projects/game-of-life/mpi/game_of_life",
           "-fopenmp",
           "-Wall",
           "-O3",

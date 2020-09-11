@@ -215,8 +215,8 @@ int main(int argc, char **argv) {
     local_time = end_w_time - start_w_time;
     MPI_Reduce(&local_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, grid.gridComm);
 
-    printf("Worker: %d - Start: %.6f End: %.6f Duration: %.9f\n",
-           grid.gridRank, start_w_time, end_w_time, end_w_time - start_w_time);
+    printf("Worker: %d - Duration: %.9f\n",
+           grid.gridRank, end_w_time - start_w_time);
 
     if (grid.gridRank == root) {
         printf("Steps: %d, Max time: %f\n", s - 1, max_time);

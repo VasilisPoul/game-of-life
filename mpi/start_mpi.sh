@@ -10,14 +10,14 @@ mpicc -O3 -g game_of_life.c main.c mpi.c -L$MPIP_DIR/lib -lmpiP -lm -Wall -o gam
 rm *.mpiP golJob.* core.* *.x
 
 #config dimensions
-rows=3840
-cols=3840
+rows=320
+cols=320
 
 ncpus=8
 
-select=4
-mpiprocs=8
-np=32
+select=3
+mpiprocs=3
+np=9
 
 
 #
@@ -32,7 +32,7 @@ echo "Setting ncpus to "$ncpus
 echo "Setting mpiprocs to "$mpiprocs
 echo "Setting np to "$np
 
-ID=$(qsub -l select=$select:ncpus=$ncpus:mpiprocs=$mpiprocs -v inputFilePath=$inputFilePath,outputFolder=$outputFolder,proc=$np,rows=$rows,cols=$cols mpiPBSscript.sh | sed -e s/"\..*"//)
+ID=$(qsub -l select=$select:ncpus=$ncpus:mpiprocs=$mpiprocs -N golJob -v inputFilePath=$inputFilePath,outputFolder=$outputFolder,proc=$np,rows=$rows,cols=$cols mpiPBSscript.sh | sed -e s/"\..*"//)
 while [[ ! -z $(qstat | grep argo082) ]]; do
   sleep 0.5
 done
