@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
         if (inputFileNotExists) {
             free2DArray(block, grid.blockDims[0]);
         }
-        system("/home/vasilis/projects/game-of-life/scripts/boxes.sh");
+        system("/home/vasilis/projects/game-of-life/scripts/vscode-boxes.sh");
     }
 
     free2DArray(old, grid.localBlockDims[0] + 2);

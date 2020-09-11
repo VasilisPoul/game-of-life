@@ -84,8 +84,8 @@ void initNeighbors(GridInfo *grid) {
  * Setup grid object
 */
 int setupGrid(GridInfo *grid, int N, int M) {
-    int flag = 0, worldRank = 0, periods[2] = {true, true};
-
+    int flag = 0, worldRank = 0, periods[2] = {true, true}, int_proc_root = 0;
+    double proc_root = 0.0;
     // if MPI has not been initialized, abort procedure
     MPI_Initialized(&flag);
     if (flag == false)
@@ -94,8 +94,29 @@ int setupGrid(GridInfo *grid, int N, int M) {
     MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);
     MPI_Comm_size(MPI_COMM_WORLD, &(grid->processes));
 
-    // Cartesian dimensions
-    grid->gridDims[0] = grid->gridDims[1] = (int) sqrt(grid->processes);
+    proc_root = sqrt(grid->processes);
+    int_proc_root = (int) proc_root;
+
+    if (int_proc_root == proc_root) {
+        // Cartesian dimensions
+        grid->gridDims[0] = int_proc_root;
+        grid->gridDims[1] = int_proc_root;
+    } else {
+        grid->gridDims[0] = 1;
+        grid->gridDims[1] = grid->processes; // 2
+
+//         grid->gridDims[0] = 2;
+//         grid->gridDims[1] = grid->processes / 2; // 8
+
+        // grid->gridDims[0] = 4;
+        // grid->gridDims[1] = grid->processes / 4; // 32
+
+        // grid->gridDims[0] = 8;
+        // grid->gridDims[1] = grid->processes / 8; // 128
+
+        // grid->gridDims[0] = 16;
+        // grid->gridDims[1] = grid->processes / 16; //
+    }
 
     //MPI_Dims_create(grid->processes, 2, grid->gridDims);
 
@@ -111,9 +132,20 @@ int setupGrid(GridInfo *grid, int N, int M) {
     grid->blockDims[0] = N;
     grid->blockDims[1] = M;
 
-    // Local array dimensions
-    grid->localBlockDims[0] = N / (int) sqrt(grid->processes);
-    grid->localBlockDims[1] = M / (int) sqrt(grid->processes);
+
+    if (int_proc_root == proc_root) {
+
+        // Local array dimensions
+        grid->localBlockDims[0] = N / int_proc_root;
+        grid->localBlockDims[1] = M / int_proc_root;
+
+    } else {
+        // Local array dimensions
+        grid->localBlockDims[0] = N;
+        grid->localBlockDims[1] = M / grid->processes;
+//        grid->localBlockDims[0] = N / 2;
+//        grid->localBlockDims[1] = M / 4;
+    }
 
     grid->stepLocalChanges = 0;
     grid->stepGlobalChanges = 0;

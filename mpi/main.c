@@ -8,7 +8,7 @@
 #include "mpi.h"
 #include "game_of_life.h"
 
-#define STEPS 1000
+#define STEPS 2
 
 int main(int argc, char **argv) {
     int s = 0, i = 0, j = 0, rank, size = 0, root = 0, inputFileNotExists = 0, starts[2], opt = 0, rows = 0, cols = 0;
@@ -59,7 +59,6 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    // TODO: Setup grid dimensions & local array dimensions based on blockDims[0], M, W parameters.
     setupGrid(&grid, rows, cols);
 
     // Allocate local blocks
