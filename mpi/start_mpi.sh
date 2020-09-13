@@ -7,7 +7,7 @@ module load mpiP
 mpicc -O3 -g game_of_life.c main.c mpi.c -L$MPIP_DIR/lib -lmpiP -lm -Wall -o game_of_life
 
 #rm
-rm *.mpiP golJob*.* core.* *.x times.*
+rm *.mpiP golJob*.* core.* *.x times.* speedup.* efficiency.*
 rm -f generations/row/*
 rm -f generations/boxes/*
 
@@ -60,21 +60,26 @@ for i in {1..4}; do
     echo "Setting np to "$np
 
     ID=$(qsub -l select=$select:ncpus=$ncpus:mpiprocs=$mpiprocs -N golJob_$j"_"$rows -v inputFilePath=$inputFilePath,outputFolder=$outputFolder,proc=$np,rows=$rows,cols=$cols mpiPBSscript.sh | sed -e s/"\..*"//)
+    
+    
+    i=1
+    sp="/-\|"
+    echo -n ' '
+    echo "waiting... "$j" ... "$rows
     while [[ ! -z $(qstat | grep argo082) ]]; do
-      echo "waiting... "$j" ... "$rows
-      sleep 0.5
+
+      printf "\b${sp:i++%${#sp}:1}"   
+      sleep 0.3
     done
     (grep "Steps" < "golJob_"$j"_"$rows".o"$ID ) | sed -e "s/Steps: [0-9]*, Max time: /"$j": /" >>$TF
   done
 
 done
 
-
-#speedup & efficiency
+# #speedup & efficiency
 for tf in times.*.txt; do
-
-
-  TS=$(head -n 1 "$tf" | sed -e "s/[0-9]*: //")
+  head=$(head -n 1 "$tf")
+  TS=$(echo "$head" | sed -e "s/[0-9]*: //")
   echo "TS="$TS
   sf=$(printf $tf | sed -e "s/times/speedup/")
   ef=$(printf $tf | sed -e "s/times/efficiency/")
@@ -82,14 +87,14 @@ for tf in times.*.txt; do
   touch $sf
   touch $ef
   P=1
-  x=$(tail -n +1 $tf)
-  # processes=$(x | sed -e "s/[0-9]*: //")
-  for TP in $(x sed -e "s/[0-9]*: //"); do
-    echo "TP"=$TP
-    S=$(python -c "print("$TS" / "$TP")")
-    E=$(python -c "print("$S" / "$P")")
-    P=$((P * 2))
-    echo $S >>"$sf"
-    echo $E >>"$ef"
-  done
+  while read line; do
+  TP=$(echo "$line" | sed -e "s/[0-9]*: //")
+  ps=$(echo "$line" | grep -G -o "[0-9]*: ")
+  S=$(python -c "print("$TS" / "$TP")")
+  E=$(python -c "print("$S" / "$P")")
+  P=$((P * 2))
+  echo $ps$S >>"$sf"
+  echo $ps$E >>"$ef"
+  done < $tf
 done
+
