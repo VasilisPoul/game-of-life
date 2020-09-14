@@ -3,7 +3,7 @@ SOURCE	= main.c mpi.c game_of_life.c
 HEADER	= mpi.h game_of_life.h
 OUT	= game_of_life
 CC	 = mpicc
-FLAGS	 = -g -c -Wall -O3 
+FLAGS	 = -g -c -Wall -O3
 LFLAGS	 = 
 
 all: $(OBJS)

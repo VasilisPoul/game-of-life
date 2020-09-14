@@ -7,7 +7,7 @@ module load mpiP
 mpicc -O3 -g game_of_life.c main.c mpi.c -L$MPIP_DIR/lib -lmpiP -lm -Wall -o game_of_life
 
 #rm
-rm *.mpiP golJob*.* core.* *.x times.* speedup.* efficiency.*
+rm *.mpiP golJob*.* *.x times.* speedup.* efficiency.*
 rm -f generations/row/*
 rm -f generations/boxes/*
 
@@ -23,6 +23,7 @@ for i in {1..4}; do
   rows=$(python -c "print("$rows" * "$i")")
   cols=$(python -c "print("$cols" * "$i")")
 
+  echo "Generating input file."
   python3 scripts/block.py $rows $inputFilePath
 
   TF="times."$rows"x"$cols".txt"
@@ -54,20 +55,15 @@ for i in {1..4}; do
     ncpus=8
     np=$j
 
-    echo "Setting select to "$select
-    echo "Setting ncpus to "$ncpus
-    echo "Setting mpiprocs to "$mpiprocs
-    echo "Setting np to "$np
+    echo "Run with "$np" processes, nodes: "$select", cpus: "$ncpus", processes per node: "$mpiprocs
 
     ID=$(qsub -l select=$select:ncpus=$ncpus:mpiprocs=$mpiprocs -N golJob_$j"_"$rows -v inputFilePath=$inputFilePath,outputFolder=$outputFolder,proc=$np,rows=$rows,cols=$cols mpiPBSscript.sh | sed -e s/"\..*"//)
-    
     
     i=1
     sp="/-\|"
     echo -n ' '
-    echo "waiting... "$j" ... "$rows
+    echo "Waiting... Processes: "$j" ... Dimensions: "$rows" x "$cols
     while [[ ! -z $(qstat | grep argo082) ]]; do
-
       printf "\b${sp:i++%${#sp}:1}"   
       sleep 0.3
     done
