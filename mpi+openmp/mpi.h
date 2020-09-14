@@ -32,8 +32,6 @@ typedef struct gridInfo {
     int gridCoords[2];      // grid coordinates
     int blockDims[2];       // block dimensions
     int localBlockDims[2];  // local block dimensions
-    int stepGlobalChanges;
-    int stepLocalChanges;
 } GridInfo;
 
 void printGridInfo(GridInfo *grid);

@@ -115,9 +115,6 @@ int setupGrid(GridInfo *grid, int N, int M) {
     grid->localBlockDims[0] = N / (int) sqrt(grid->processes);
     grid->localBlockDims[1] = M / (int) sqrt(grid->processes);
 
-    grid->stepLocalChanges = 0;
-    grid->stepGlobalChanges = 0;
-
     // Initialize neighbors
     initNeighbors(grid);
     return 0;
@@ -288,7 +285,6 @@ void print_step(int step, GridInfo *grid, char **old, char **current) {
             print_array(old, false, true, grid->localBlockDims[0] + 2, grid->localBlockDims[1] + 2,
                         grid->localBlockDims[0] + 2,
                         grid->localBlockDims[1] + 2);
-            printf("changes: %d\n\n", grid->stepLocalChanges);
             printf("current:");
             print_array(current, false, true, grid->localBlockDims[0] + 2, grid->localBlockDims[1] + 2,
                         grid->localBlockDims[0] + 2,

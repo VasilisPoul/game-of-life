@@ -2,16 +2,17 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include "mpi.h"
 #include "game_of_life.h"
 #include <omp.h>
 
-#define STEPS 1000
+#define STEPS 5000
 
 int main(int argc, char **argv) {
-    int s = 0, i = 0, j = 0, rank, size = 0, root = 0, inputFileNotExists = 0, starts[2];
+    int opt = 0, s = 1, ss = 0, i = 0, j = 0, rank, size = 0, root = 0, rows = 0, cols = 0, inputFileNotExists = 0, starts[2], stepGlobalChanges = 0, stepLocalChanges = 0, stepLocalThreadChanges = 0, thread_id = 0, threads = 0;
     double start_w_time = 0.0, end_w_time = 0.0, local_time = 0.0, max_time = 0.0;
-    char **block = NULL, **old = NULL, **current = NULL, **temp = NULL, buffer[100];
+    char **block = NULL, **old = NULL, **current = NULL, **temp = NULL, buffer[100], *inputFilePath = NULL, *outputFolder = NULL;
     MPI_Datatype colType, rowType, subArrayType;
     MPI_Request send_a_request[8], recv_a_request[8], send_b_request[8], recv_b_request[8];
     MPI_Status send_a_status[8], send_b_status[8], recv_a_status[8], recv_b_status[8];
@@ -23,11 +24,40 @@ int main(int argc, char **argv) {
     GridInfo grid;
     //
     MPI_Init(&argc, &argv);
+
+    while ((opt = getopt(argc, argv, "i:f:r:c:")) != -1) {
+        switch (opt) {
+            case 'i':
+                inputFilePath = optarg;
+                break;
+            case 'f':
+                outputFolder = optarg;
+                break;
+            case 'r':
+                rows = atoi(optarg);
+                break;
+            case 'c':
+                cols = atoi(optarg);
+                break;
+            default: /* '?' */
+                fprintf(stderr,
+                        "Usage: %s [-i] input file path [-f] output folder [-r] number of rows [-c] number of columns\n",
+                        argv[0]);
+                exit(EXIT_FAILURE);
+        }
+    }
+
+    if (argc != 9) {
+        fprintf(stderr,
+                "Usage: %s [-i] input file path [-f] output folder [-r] number of rows [-c] number of columns\n",
+                argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    // TODO: Setup grid dimensions & local array dimensions based on blockDims[0], M, W parameters.
-    setupGrid(&grid, TABLE_N, TABLE_M);
+    setupGrid(&grid, rows, cols);
 
     // Allocate local blocks
     old = allocate2DArray(grid.localBlockDims[0] + 2, grid.localBlockDims[1] + 2);
@@ -52,7 +82,7 @@ int main(int argc, char **argv) {
 
     // Open input file
     inputFileNotExists = MPI_File_open(MPI_COMM_WORLD,
-                                       "/home/vasilis/projects/game-of-life/mpi/generations/row/input.txt",
+                                       "/home/msi/projects/CLionProjects/game-of-life/mpi+openmp/generations/row/input.txt",
                                        MPI_MODE_RDONLY, MPI_INFO_NULL, &inputFile);
     if (inputFileNotExists) {
         // No file, generate array
@@ -92,137 +122,152 @@ int main(int argc, char **argv) {
     start_w_time = MPI_Wtime();
     MPI_Pcontrol(1);
 
-
- 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Start loop ...
-    #pragma omp parallel num_threads(4) private (i,s)
-    for (s = 1; s <= STEPS; s++) {
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma omp parallel \
+private(thread_id, temp, i, ss, stepLocalThreadChanges) \
+shared(ompi_mpi_comm_world, ompi_mpi_int, ompi_mpi_op_sum, threads, old, current, grid, stepLocalChanges, stepGlobalChanges, recv_a_status, recv_b_status, recv_a_request, send_a_request, recv_b_request, send_b_request, send_a_status, send_b_status) \
+default(none)
+    {
+        thread_id = omp_get_thread_num();
+        threads = omp_get_num_threads();
 
-        // Start receive/send requests
-        #pragma omp master
-        if (s % 2) {
-            MPI_Startall(8, recv_a_request);
-            MPI_Startall(8, send_a_request);
-        } else {
-            MPI_Startall(8, recv_b_request);
-            MPI_Startall(8, send_b_request);
-        }
+        printf("thread_id: %d, threads: %d\n", thread_id, threads);
 
-        // Initialize variable of local step changes
-        grid.stepLocalChanges = 0;
+        for (ss = 1; ss <= STEPS; ss++) {
+//            s+=1;
+            //printf("step: %d, thread_id: %d, threads: %d\n", s, thread_id, threads);
 
+            // Start receive/send requests
+#pragma omp master
+            {
+//                printf("MASTER!! step: %d, thread_id: %d, threads: %d\n", s, thread_id, threads);
 
+                if (ss % 2) {
+                    MPI_Startall(8, recv_a_request);
+                    MPI_Startall(8, send_a_request);
+                } else {
+                    MPI_Startall(8, recv_b_request);
+                    MPI_Startall(8, send_b_request);
+                }
+            };
 
-        // Calculate internals
-        #pragma omp parallel for collapse(2)
-        for (i = 2; i < grid.localBlockDims[0]; i++) {
-            for (j = 2; j < grid.localBlockDims[1]; j++) {
-                calculate(old, current, i, j, &grid.stepLocalChanges);
+            // Calculate internals
+#pragma omp for collapse(2) reduction(+:stepLocalChanges)
+            for (i = 2; i < grid.localBlockDims[0]; i++) {
+                for (j = 2; j < grid.localBlockDims[1]; j++) {
+                    calculate(old, current, i, j, &stepLocalThreadChanges);
+                    stepLocalChanges += stepLocalThreadChanges;
+                }
             }
-        }
 
-        // Wait receive requests
-        #pragma omp master
-        if (s % 2) {
-            MPI_Waitall(8, recv_a_request, recv_a_status);
-        } else {
-            MPI_Waitall(8, recv_b_request, recv_b_status);
-        }
+            // Wait receive requests
+#pragma omp master
+            {
+                if (ss % 2) {
+                    MPI_Waitall(8, recv_a_request, recv_a_status);
+                } else {
+                    MPI_Waitall(8, recv_b_request, recv_b_status);
+                }
+            }
 
-        
-        // Calculate up row
-        #pragma omp parallel for
-        for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
-            calculate(old, current, 1, i, &grid.stepLocalChanges);
-        }
+            // Calculate up row
+#pragma omp for reduction(+:stepLocalChanges)
+            for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
+                calculate(old, current, 1, i, &stepLocalThreadChanges);
+                stepLocalChanges += stepLocalThreadChanges;
+            }
 
-        
-        // Calculate down row
-        #pragma omp parallel for
-        for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
-            calculate(old, current, grid.localBlockDims[0], i, &grid.stepLocalChanges);
-        }
+            // Calculate down row
+#pragma omp for reduction(+:stepLocalChanges)
+            for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
+                calculate(old, current, grid.localBlockDims[0], i, &stepLocalThreadChanges);
+                stepLocalChanges += stepLocalThreadChanges;
+            }
 
-        
-        // Calculate left Column
-        #pragma omp parallel for
-        for (i = 2; i < grid.localBlockDims[0]; i++) {
-            calculate(old, current, i, 1, &grid.stepLocalChanges);
-        }
+            // Calculate left Column
+#pragma omp for reduction(+:stepLocalChanges)
+            for (i = 2; i < grid.localBlockDims[0]; i++) {
+                calculate(old, current, i, 1, &stepLocalThreadChanges);
+                stepLocalChanges += stepLocalThreadChanges;
+            }
 
-        
-        // Calculate right column
-        #pragma omp parallel for
-        for (i = 2; i < grid.localBlockDims[0]; i++) {
-            calculate(old, current, i, grid.localBlockDims[1], &grid.stepLocalChanges);
-        }
+            // Calculate right column
+#pragma omp for reduction(+:stepLocalChanges)
+            for (i = 2; i < grid.localBlockDims[0]; i++) {
+                calculate(old, current, i, grid.localBlockDims[1], &stepLocalThreadChanges);
+                stepLocalChanges += stepLocalThreadChanges;
+            }
 
-        // print_step(s, &grid, old, current);
+            //todo: thread reduce. collect all stepLocalThreadChanges values -> grid.stepLocalChanges
 
-        #pragma omp master
-        {
+            // print_step(s, &grid, old, current);
+
+            //#pragma omp master
+            //{
             // Create & write generation file
-            sprintf(buffer, "/home/vasilis/projects/game-of-life/mpi/generations/row/step-%d.txt", s);
-            MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
-            MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
-            for (i = 1; i <= grid.localBlockDims[0]; i++) {
-                MPI_File_iwrite(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &fileRequests[i - 1]);
-            }
+            //sprintf(buffer, "/home/msi/projects/CLionProjects/game-of-life/mpi+openmp/generations/row/step-%d.txt", s);
+            //MPI_File_open(MPI_COMM_SELF, buffer, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &outputFile);
+            //MPI_File_set_view(outputFile, 0, MPI_CHAR, subArrayType, "native", MPI_INFO_NULL);
+            //for (i = 1; i <= grid.localBlockDims[0]; i++) {
+            //    MPI_File_iwrite(outputFile, &current[i][1], grid.localBlockDims[1], MPI_CHAR, &fileRequests[i - 1]);
+            //}
 
             // Wait until writing is done
-            MPI_Waitall(grid.localBlockDims[0], fileRequests, fileStatus);
+            //MPI_Waitall(grid.localBlockDims[0], fileRequests, fileStatus);
 
             // Close generation file
-            MPI_File_close(&outputFile);
-        }       
-        #pragma omp barrier
+            //MPI_File_close(&outputFile);
+            //}
 
-        #pragma omp single
-        {
-            // Swap local blocks
-            temp = old;
-            old = current;
-            current = temp;
+
+#pragma omp barrier
+
+#pragma omp single
+            {
+                // Swap local blocks
+                temp = old;
+                old = current;
+                current = temp;
+            }
+
+#pragma omp master
+            // Summarize all local changes
+            if (ss % 10 == 0) {
+                MPI_Allreduce(&stepLocalChanges, &stepGlobalChanges, 1, MPI_INT, MPI_SUM, grid.gridComm);
+//            if (stepGlobalChanges == 0) {
+//                break;
+//            }
+            }
+
+
+            // Wait send requests
+#pragma omp master
+            if (ss % 2) {
+                MPI_Waitall(8, send_a_request, send_a_status);
+            } else {
+                MPI_Waitall(8, send_b_request, send_b_status);
+            }
         }
-
-        // #pragma omp master
-        // // Summarize all local changes
-        // if (s % 10 == 0) {
-        //     MPI_Allreduce(&grid.stepLocalChanges, &grid.stepGlobalChanges, 1, MPI_INT, MPI_SUM, grid.gridComm);
-        //     if (grid.stepGlobalChanges == 0) {
-        //         break;
-        //     }
-        // }
-
-
-        
-        // Wait send requests
-        #pragma omp master
-        if (s % 2) {
-            MPI_Waitall(8, send_a_request, send_a_status);
-        } else {
-            MPI_Waitall(8, send_b_request, send_b_status);
-        }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // End MPI_Wtime
     end_w_time = MPI_Wtime();
+
     MPI_Pcontrol(0);
 
     local_time = end_w_time - start_w_time;
+
     MPI_Reduce(&local_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, grid.gridComm);
 
-    printf("Worker: %d - Start: %.6f End: %.6f Duration: %.9f\n",
-           grid.gridRank, start_w_time, end_w_time, end_w_time - start_w_time);
+    printf("Worker: %d - Duration: %.9f\n", grid.gridRank, end_w_time - start_w_time);
 
     if (grid.gridRank == root) {
-        printf("Steps: %d, Max time: %f\n", s - 1, max_time);
+        printf("Steps: %d, Max time: %f\n", (s - 1) / threads, max_time);
         if (inputFileNotExists) {
             free2DArray(block, grid.blockDims[0]);
         }
-        system("/home/vasilis/projects/game-of-life/scripts/vscode-boxes.sh");
     }
 
     free2DArray(old, grid.localBlockDims[0] + 2);
@@ -231,5 +276,6 @@ int main(int argc, char **argv) {
     free(fileStatus);
 
     MPI_Comm_free(&grid.gridComm);
+
     MPI_Finalize();
 }
