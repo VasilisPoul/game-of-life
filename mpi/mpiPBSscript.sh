@@ -4,7 +4,7 @@
 #PBS -l pvmem=2G
 
 # Max Wall time, Example 1 Minute #
-#PBS -l walltime=00:01:00
+#PBS -l walltime=00:10:00
 
 # Only this job uses the chosen nodes
 #PBS -l place=excl
