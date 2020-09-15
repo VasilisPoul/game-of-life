@@ -83,8 +83,7 @@ int main(int argc, char **argv) {
     MPI_Type_commit(&subArrayType);
 
     // Open input file
-    inputFileNotExists = MPI_File_open(MPI_COMM_WORLD, inputFilePath, MPI_MODE_RDONLY, MPI_INFO_NULL,
-                                       &inputFile);
+    inputFileNotExists = MPI_File_open(MPI_COMM_WORLD, inputFilePath, MPI_MODE_RDONLY, MPI_INFO_NULL, &inputFile);
     if (inputFileNotExists) {
         // No file, generate array
         if (rank == root) {

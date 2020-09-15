@@ -19,80 +19,91 @@ outputFolder=generations/row/
 rows=320
 cols=320
 
-ompthreads=2
+threads=(1 2 4 8 16)
+
 ncpus=8
+ompthreads=0
+for t in ${threads[@]}; do
+  for i in {1..1}; do
 
-for i in {1..1}; do
+    #config dimensions
+    rows=$(python -c "print("$rows" * "$i")")
+    cols=$(python -c "print("$cols" * "$i")")
 
-  #config dimensions
-  rows=$(python -c "print("$rows" * "$i")")
-  cols=$(python -c "print("$cols" * "$i")")
+    echo "Generating input file."
+    python3 scripts/block.py $rows $inputFilePath
 
-  echo "Generating input file."
-  python3 scripts/block.py $rows $inputFilePath
+    TF="times."$rows"x"$cols".txt"
+    processes=(1 4 16 64)
 
-  TF="times."$rows"x"$cols".txt"
+    for j in ${processes[@]}; do 
 
-  processes=(1)
-
-  for j in ${processes[@]}; do 
-
-      case "$j" in
-    1 )
-      select=1
-      mpiprocs=1
-      ;;&
-    4 )
-      select=1
-      mpiprocs=4      
-      ;;&   
-    16 )
-      select=2
-      mpiprocs=8       
-      ;;&
-    64 )
-      select=8
-      mpiprocs=8      
-      ;;&
-    esac
-  
-    np=$j
-
-    echo "Run with "$np" processes, nodes: "$select", cpus: "$ncpus", processes per node: "$mpiprocs
-
-    ID=$(qsub -l select=$select:ncpus=$ncpus:mpiprocs=$mpiprocs:ompthreads=$ompthreads -N golJob_$j"_"$rows -v inputFilePath=$inputFilePath,outputFolder=$outputFolder,proc=$np,rows=$rows,cols=$cols mpihPBSscript.sh | sed -e s/"\..*"//)
+        case "$j" in
+      1 )
+        select=1
+        mpiprocs=1
+        ;;&
+      4 )
+        select=1
+        mpiprocs=4      
+        ;;&   
+      16 )
+        select=2
+        mpiprocs=8       
+        ;;&
+      64 )
+        select=8
+        mpiprocs=8      
+        ;;&
+      esac
     
-    i=1
-    sp="/-\|"
-    echo -n ' '
-    echo "Waiting... Processes: "$j" ... Dimensions: "$rows" x "$cols
-    while [[ ! -z $(qstat | grep argo082) ]]; do
-      printf "\b${sp:i++%${#sp}:1}"   
-      sleep 0.3
-    done
-    (grep "Steps" < "golJob_"$j"_"$rows".o"$ID ) | sed -e "s/Steps: [0-9]*, Max time: /"$j": /" >>$TF
-  done
+      np=$j
 
+      echo "Run with "$np" processes, nodes: "$select", cpus: "$ncpus", processes per node: "$mpiprocs
+
+      ID=$(qsub -l select=$select:ncpus=$ncpus:mpiprocs=$mpiprocs:ompthreads=$t -N golJob_p$j"_t"$t"_dims"$rows -v inputFilePath=$inputFilePath,outputFolder=$outputFolder,proc=$np,rows=$rows,cols=$cols mpihPBSscript.sh | sed -e s/"\..*"//)
+      
+      i=1
+      sp="/-\|"
+      echo -n ' '
+      echo "Waiting... Processes: "$j" ... Threads: "$t" ... Dimensions: "$rows" x "$cols
+      while [[ ! -z $(qstat | grep argo021) ]]; do
+        printf "\b${sp:i++%${#sp}:1}"
+        sleep 0.3
+      done
+      (grep "Steps" < "golJob_p"$j"_t"$t"_dims"$rows".o"$ID ) | sed -e "s/Steps: [0-9]*, Max time: /Processes "$j" Threads "$t": /" >>$TF
+    done
+
+  done
 done
 
-# #speedup & efficiency
+
+#speedup & efficiency
 for tf in times.*.txt; do
-  head=$(head -n 1 "$tf")
-  TS=$(echo "$head" | sed -e "s/[0-9]*: //")
-  echo "TS="$TS
-  sf=$(printf $tf | sed -e "s/times/speedup/")
-  ef=$(printf $tf | sed -e "s/times/efficiency/")
-  echo $sf, $ef
-  touch $sf
-  touch $ef
-  P=1
+  i=0
+  TS=0
+  sf=0
+  ef=0
+  P=0
   while read line; do
-  TP=$(echo "$line" | sed -e "s/[0-9]*: //")
-  ps=$(echo "$line" | grep -G -o "[0-9]*: ")
+  if ! ((i % 4)); then
+    sed=$( sed -n $((i+1)),$((i+1))p "$tf")
+    TS=$(echo "$sed" | sed -e "s/Processes [0-9]* Threads [0-9]*: //")
+    sf=$(printf $tf | sed -e "s/times/speedup/")
+    ef=$(printf $tf | sed -e "s/times/efficiency/")
+    touch $sf
+    touch $ef
+    echo >>"$sf"
+    echo >>"$ef"
+    P=1
+  fi
+  TP=$(echo "$line" | sed -e "s/Processes [0-9]* Threads [0-9]*: //")
+  ps=$(echo "$line" | grep -G -o "Processes [0-9]* Threads [0-9]*: ")
   S=$(python -c "print("$TS" / "$TP")")
   E=$(python -c "print("$S" / "$P")")
   P=$((P * 2))
   echo $ps$S >>"$sf"
   echo $ps$E >>"$ef"
+  i=$((i+1))
   done < $tf
 done
