@@ -7,7 +7,7 @@
 #include "game_of_life.h"
 #include <omp.h>
 
-#define STEPS 1000
+#define STEPS 10000
 
 int main(int argc, char **argv) {
     int opt = 0, s = 1, ss = 0, i = 0, j = 0, rank, size = 0, root = 0, rows = 0, cols = 0, inputFileNotExists = 0, starts[2], stepGlobalChanges = 0, stepLocalChanges = 0, stepLocalThreadChanges = 0, thread_id = 0, threads = 0;
@@ -120,21 +120,20 @@ int main(int argc, char **argv) {
     start_w_time = MPI_Wtime();
     MPI_Pcontrol(1);
 
-    // Start loop ...
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma omp parallel num_threads(2) \
 private(thread_id, temp, i, ss, stepLocalThreadChanges, buffer) \
-shared(ompi_mpi_comm_world, ompi_mpi_info_null, ompi_mpi_comm_self, ompi_mpi_char, ompi_mpi_int, ompi_mpi_op_sum, threads, old, current, grid, stepLocalChanges, \
-stepGlobalChanges, recv_a_status, recv_b_status, recv_a_request, send_a_request, recv_b_request, send_b_request, \
-send_a_status, send_b_status, outputFolder, subArrayType, outputFile, fileRequests, fileStatus) \
-reduction(+:s) \
+shared(ompi_mpi_comm_world, ompi_mpi_info_null, ompi_mpi_comm_self, ompi_mpi_char, ompi_mpi_int, ompi_mpi_op_sum, \
+threads, old, current, grid, stepLocalChanges, stepGlobalChanges, recv_a_status, recv_b_status, recv_a_request, \
+send_a_request, recv_b_request, send_b_request, send_a_status, send_b_status, outputFolder, subArrayType, outputFile, \
+fileRequests, fileStatus) reduction(+:s) \
 default(none)
     {
         thread_id = omp_get_thread_num();
         threads = omp_get_num_threads();
-
         printf("rank: %d, worker: %d, threads: %d\n", grid.gridRank, thread_id, threads);
 
+        // Start loop ...
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         for (ss = 1; ss <= STEPS; ss++) {
             s += 1;
 
@@ -152,12 +151,12 @@ default(none)
 
             // Calculate internals
 #pragma omp for schedule(static, 1) collapse(2) reduction(+:stepLocalChanges)
-                for (i = 2; i < grid.localBlockDims[0]; i++) {
-                    for (j = 2; j < grid.localBlockDims[1]; j++) {
-                        calculate(old, current, i, j, &stepLocalThreadChanges);
-                        stepLocalChanges += stepLocalThreadChanges;
-                    }
+            for (i = 2; i < grid.localBlockDims[0]; i++) {
+                for (j = 2; j < grid.localBlockDims[1]; j++) {
+                    calculate(old, current, i, j, &stepLocalThreadChanges);
+                    stepLocalChanges += stepLocalThreadChanges;
                 }
+            }
 
             // Wait receive requests
 #pragma omp master
@@ -171,32 +170,32 @@ default(none)
 
             // Calculate up row
 #pragma omp for schedule(static, 1) reduction(+:stepLocalChanges)
-                for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
-                    calculate(old, current, 1, i, &stepLocalThreadChanges);
-                    stepLocalChanges += stepLocalThreadChanges;
-                }
+            for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
+                calculate(old, current, 1, i, &stepLocalThreadChanges);
+                stepLocalChanges += stepLocalThreadChanges;
+            }
 
             // Calculate down row
 #pragma omp for schedule(static, 1) reduction(+:stepLocalChanges)
-                for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
-                    calculate(old, current, grid.localBlockDims[0], i, &stepLocalThreadChanges);
-                    stepLocalChanges += stepLocalThreadChanges;
-                }
+            for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
+                calculate(old, current, grid.localBlockDims[0], i, &stepLocalThreadChanges);
+                stepLocalChanges += stepLocalThreadChanges;
+            }
 
             // Calculate left Column
 #pragma omp for schedule(static, 1) reduction(+:stepLocalChanges)
-                for (i = 2; i < grid.localBlockDims[0]; i++) {
-                    calculate(old, current, i, 1, &stepLocalThreadChanges);
-                    stepLocalChanges += stepLocalThreadChanges;
-                }
+            for (i = 2; i < grid.localBlockDims[0]; i++) {
+                calculate(old, current, i, 1, &stepLocalThreadChanges);
+                stepLocalChanges += stepLocalThreadChanges;
+            }
 
 
             // Calculate right column
 #pragma omp for schedule(static, 1) reduction(+:stepLocalChanges)
-                for (i = 2; i < grid.localBlockDims[0]; i++) {
-                    calculate(old, current, i, grid.localBlockDims[1], &stepLocalThreadChanges);
-                    stepLocalChanges += stepLocalThreadChanges;
-                }
+            for (i = 2; i < grid.localBlockDims[0]; i++) {
+                calculate(old, current, i, grid.localBlockDims[1], &stepLocalThreadChanges);
+                stepLocalChanges += stepLocalThreadChanges;
+            }
 
 /*#pragma omp barrier
 #pragma omp master
@@ -230,13 +229,13 @@ default(none)
             }
 
 #pragma omp master
-                // Summarize all local changes
-                if (ss % 10 == 0) {
-                    MPI_Allreduce(&stepLocalChanges, &stepGlobalChanges, 1, MPI_INT, MPI_SUM, grid.gridComm);
-                    if (stepGlobalChanges == 0) {
-                        //break;
-                    }
+            // Summarize all local changes
+            if (ss % 10 == 0) {
+                MPI_Allreduce(&stepLocalChanges, &stepGlobalChanges, 1, MPI_INT, MPI_SUM, grid.gridComm);
+                if (stepGlobalChanges == 0) {
+                    //break;
                 }
+            }
 
             // Wait send requests
 #pragma omp master
@@ -248,7 +247,8 @@ default(none)
                 }
             }
         }
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     }
 
     // End MPI_Wtime
@@ -267,6 +267,7 @@ default(none)
         if (inputFileNotExists) {
             free2DArray(block, grid.blockDims[0]);
         }
+//        system("/home/msi/projects/CLionProjects/game-of-life/mpi+openmp/scripts/clion-boxes.sh");
     }
 
     free2DArray(old, grid.localBlockDims[0] + 2);
