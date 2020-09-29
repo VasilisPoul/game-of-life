@@ -35,23 +35,20 @@ void print_array(char **array, int n) {
 
 
 // Device code
-__global__ void kernel(char *device_old) {
-    unsigned int ix = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned int iy = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned int idx = iy * N + ix;
+__global__ void kernel(char *old, char* current) {
     __shared__ char local[M][M];
-
-    int i = threadIdx.y;
-    int j = threadIdx.x;
-
-
-
+    unsigned int global_row = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int global_col = blockIdx.y * blockDim.y + threadIdx.y;
+    unsigned int local_row = threadIdx.y;
+    unsigned int local_col = threadIdx.x;
+    unsigned int global_thread_id = global_col * N + global_row;
+    unsigned int local_thread_id = local_col + local_row  * M;
 
     // local[i][j] = old[idx]
 
-   // local[threadIdx.x] = device_old[i];
+   // local[threadIdx.x] = old[i];
 
-    printf("%d %d t[%d][%d] - t[%d][%d]=%d\n", blockIdx.x, blockDim.x, threadIdx.x, threadIdx.y, ix, iy, idx);
+    printf("BLOCK:[%d][%d] Thread global coords:[%d][%d]=%d Thread local coords:[%d][%d]=%d\n", blockIdx.x, blockIdx.y, global_row, global_col, global_thread_id, local_row, local_col, local_thread_id   );
 }
 
 //Host Code
