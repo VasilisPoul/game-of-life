@@ -5,9 +5,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define N 32
-#define M 16
-#define FILE_NAME "./test-files/32x32.txt"
+#define N 8
+#define M 4
+#define FILE_NAME "./test-files/8x8.txt"
 #define STEPS 1
 
 char **allocate2DArray(int rows, int columns) {
@@ -56,11 +56,10 @@ __global__ void kernel(char *device_old) {
 
 //Host Code
 int main() {
-    char **host_array = NULL, **host_current = NULL, *device_old, *device_current, *temp = NULL;;
-    size_t pitch;
-    int i = 0, j = 0, fd = 0;
+    char **host_array = nullptr, **host_current = nullptr, *device_old, *device_current, *temp = nullptr;;
+    int i = 0, fd = 0;
     dim3 m(M, M);
-    dim3 n((N + (float) M - 1) / (float) M, (N + (float) M - 1) / (float) M);
+    dim3 n((unsigned int) ((N + (float) M - 1) / (float) M), (unsigned int) ((N + (float) M - 1) / (float) M));
 
     // Array allocations
     host_array = allocate2DArray(N, N);
