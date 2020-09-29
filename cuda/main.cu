@@ -1,133 +1,115 @@
-// #include <stdlib.h>
-// #include <stdio.h>
-// #include <stdbool.h>
-// #include <cuda.h>
-
-// void cudaAllocate2DArray(char **block, int rows, int columns) {
-//     int i;
-//     printf("test1\n");
-//     cudaMalloc((void ***) &block, rows * sizeof(char *));
-
-
-
-//     //    block = (char **) malloc(rows * sizeof(char *));
-//     cudaMalloc((void **) &block[0], rows * columns * sizeof(char));
-
-
-
-
-//     printf("test2\n");
-//     //block[0] = (char *) malloc(rows * columns * sizeof(char));
-//     for (i = 1; i < rows; i++) {
-//         block[i] = &(block[0][i * rows]);
-//     }
-//     // memset(block[0], (int) '0', rows * columns * sizeof(char));
-//     return;
-// }
-
-
-// int main(int argc, char **argv) {
-//     char **block = NULL;
-//     char **device_block = NULL;
-//     int rows = 960;
-//     int columns = 960;
-    
-//     cudaAllocate2DArray(device_block, rows, columns);
-    
-
-//     cudaMemset( device_block, 0, rows*columns*sizeof(char));
-
-
-// //    block = allocate2DArray(N, M);
-// //    print_array(block, N, M);
-// //    initialize(block, N, M);
-
-// //    while (operate(array, N, M));
-// //
-// //    Free2DArray(array, N);
-// }
-
-
-
-
-#include<stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include<cuda.h>
+#include <cuda.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#define DIMS 320
 
+#define N 32
+#define M 16
+#define FILE_NAME "./test-files/32x32.txt"
+#define STEPS 1
 
 char **allocate2DArray(int rows, int columns) {
-    int c;
-    char **array;
-    array = (char **) malloc(rows * sizeof(char *));
-    if (!array)
-        return (NULL);
-    for (c = 0; c < rows; c++) {
-        array[c] = (char *) malloc(columns * sizeof(char));
-        if (!array[c])
-            return (NULL);
+    char **block;
+    int i;
+    block = (char **)malloc(rows * sizeof(char *));
+    block[0] = (char *)malloc(rows * columns * sizeof(char));
+    for (i = 1; i < rows; i++) {
+        block[i] = &(block[0][i * rows]);
     }
-    return array;
+    memset(block[0], (int) '0', rows * columns * sizeof(char));
+    return block;
+}
+
+void print_array(char **array, int n) {
+    printf("\n");
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+
+            printf("%s ", array[i][j] == '1' ? "\u2B1C" : "\u2B1B");
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
 
 
 // Device code
-__global__ void kernel(char* devPtr, int pitch)
-{
-    for (int r = 0; r < DIMS; ++r) {
-        char* row = (char*)   (  devPtr + r * pitch  );
-        for (int c = 0; c < DIMS; ++c) {
-             char element = row[c];
-        }
-    }
+__global__ void kernel(char* device_old){
+    int	i = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    int ix = blockIdx.x * blockDim.x + threadIdx.x;
+    int iy = blockIdx.y * blockDim.y + threadIdx.y;
+    int idx = iy * N + ix;
+
+    printf("%d %d t[%d][%d] - t[%d][%d]=%d\n", blockIdx.x, blockDim.x, threadIdx.x, threadIdx.y, ix, iy, idx);
+    __shared__ char local[N];
+
+    local[threadIdx.x] = device_old[i];
+
+
+
+
+    device_old[i] = 'A';
+
 }
 
 //Host Code
 int main() {
-    char** host_block = NULL;
-    char* devPtr;
+    char** host_array = NULL, **host_current = NULL, *device_old, *device_current, *temp = NULL;;
     size_t pitch;
-    host_block = allocate2DArray(DIMS, DIMS);
+    int i = 0, j = 0, fd = 0;
+    dim3 m(M,M); 
+    dim3 n((N + (float) M - 1)/(float) M,(N + (float) M - 1)/(float) M); 
 
-    int fd = open("320file.txt", O_RDONLY);
+    // Array allocations
+    host_array = allocate2DArray(N, N);
+    
+
+    print_array(host_array, N);
+
+    // Read file
+    fd = open(FILE_NAME, O_RDONLY);
     if(fd < 0){
         fprintf(stderr, "Could not open file \"%s\"\n", "320file.txt");
         return -1;
     }
-
-    printf("1\n");
-
-    int i = 0;
-    while(read(fd,  &host_block[i], DIMS)){
-        i+=DIMS;
-    }
+    while(read(fd, host_array[i++], N));
     close(fd);
 
-    printf("2\n");
+    print_array(host_array, N);
 
-    printf("\n");
-    for(i=0;i<DIMS;i++){
-        for(int j=0;j<DIMS;j++){
-            printf("%c", host_block[i][j]);
-        }
-        printf("\n");
+    // Send 2D to the Device
+    cudaMalloc((void**)&device_old, N * N * sizeof(char));
+    cudaMemcpy(device_old, host_array[0], sizeof(char) * N * N, cudaMemcpyHostToDevice);
+   
+    cudaMalloc((void**)&device_current, N * N * sizeof(char));
+    cudaMemset(device_current, '0', sizeof(char) * N * N);
+   
+
+    //TODO: check this
+    cudaDeviceSynchronize();
+ 
+    // Computations
+    for ( i = 0; i < STEPS; i++){
+
+        //call device function
+       // kernel<<<N, N>>>(device_old/*, device_current*/);
+          
+        // Swap device_old and device_current
+        temp = device_old;
+        device_old = device_current;
+        device_current = temp;
+        
+
     }
 
-    printf("3\n");
 
+    cudaMemcpy(host_array[0], device_current, sizeof(char) * N * N, cudaMemcpyDeviceToHost);
 
-    // // arxeio: monodiastato
+    print_array(host_array, N);
 
-    // // host: 2d
-
-    // // gpu: 2d
-    // cudaMallocPitch((void**)&devPtr, &pitch, DIMS * sizeof(char), DIMS);
-
-    // printf("\npitch=%d\n", pitch);
-
-    // kernel<<<100, 512>>>(devPtr, pitch);
+    
     return 0;
 }
