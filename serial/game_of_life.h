@@ -8,7 +8,7 @@
 
 bool **allocate2DArray(int rows, int columns);
 
-void Free2DArray(bool **array, int rows);
+void Free2DArray(bool **block, int rows);
 
 void initialize(bool **array, int n, int m);
 

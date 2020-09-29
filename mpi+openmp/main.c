@@ -7,7 +7,7 @@
 #include "game_of_life.h"
 #include <omp.h>
 
-#define STEPS 10000
+#define STEPS 1000
 
 int main(int argc, char **argv) {
     int opt = 0, s = 1, ss = 0, i = 0, j = 0, rank, size = 0, root = 0, rows = 0, cols = 0, inputFileNotExists = 0, starts[2], stepGlobalChanges = 0, stepLocalChanges = 0, stepLocalThreadChanges = 0, thread_id = 0, threads = 0;
@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
     start_w_time = MPI_Wtime();
     MPI_Pcontrol(1);
 
-#pragma omp parallel num_threads(2) \
+#pragma omp parallel num_threads(1) \
 private(thread_id, temp, i, ss, stepLocalThreadChanges, buffer) \
 shared(ompi_mpi_comm_world, ompi_mpi_info_null, ompi_mpi_comm_self, ompi_mpi_char, ompi_mpi_int, ompi_mpi_op_sum, \
 threads, old, current, grid, stepLocalChanges, stepGlobalChanges, recv_a_status, recv_b_status, recv_a_request, \
@@ -147,7 +147,7 @@ default(none)
                     MPI_Startall(8, recv_b_request);
                     MPI_Startall(8, send_b_request);
                 }
-            };
+            }
 
             // Calculate internals
 #pragma omp for schedule(static, 1) collapse(2) reduction(+:stepLocalChanges)

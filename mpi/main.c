@@ -221,6 +221,7 @@ int main(int argc, char **argv) {
         if (inputFileNotExists) {
             free2DArray(block, grid.blockDims[0]);
         }
+        system("/home/msi/projects/CLionProjects/game-of-life/mpi+openmp/scripts/clion-boxes.sh");
     }
 
     free2DArray(old, grid.localBlockDims[0] + 2);
