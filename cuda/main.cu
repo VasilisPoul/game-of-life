@@ -36,14 +36,22 @@ void print_array(char **array, int n) {
 
 // Device code
 __global__ void kernel(char *device_old) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int ix = blockIdx.x * blockDim.x + threadIdx.x;
-    int iy = blockIdx.y * blockDim.y + threadIdx.y;
-    int idx = iy * N + ix;
+    unsigned int ix = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int iy = blockIdx.y * blockDim.y + threadIdx.y;
+    unsigned int idx = iy * N + ix;
+    __shared__ char local[M][M];
+
+    int i = threadIdx.y;
+    int j = threadIdx.x;
+
+
+
+
+    // local[i][j] = old[idx]
+
+   // local[threadIdx.x] = device_old[i];
+
     printf("%d %d t[%d][%d] - t[%d][%d]=%d\n", blockIdx.x, blockDim.x, threadIdx.x, threadIdx.y, ix, iy, idx);
-    __shared__ char local[N];
-    local[threadIdx.x] = device_old[i];
-    device_old[i] = 'A';
 }
 
 //Host Code
@@ -67,8 +75,6 @@ int main() {
     while (read(fd, host_array[i++], N));
     close(fd);
 
-    print_array(host_array, N);
-
     // Send 2D to the Device
     cudaMalloc((void **) &device_old, N * N * sizeof(char));
     cudaMemcpy(device_old, host_array[0], sizeof(char) * N * N, cudaMemcpyHostToDevice);
@@ -77,22 +83,26 @@ int main() {
     cudaMemset(device_current, '0', sizeof(char) * N * N);
 
     //TODO: check this
-    cudaDeviceSynchronize();
+    //cudaDeviceSynchronize();
+
+    printf("host_array before:\n");
+    print_array(host_array, N);
 
     // Computations
     for (i = 0; i < STEPS; i++) {
 
         //call device function
-        // kernel<<<N, N>>>(device_old/*, device_current*/);
+        kernel<<<n, m>>>(device_old, device_current);
+
+        cudaMemcpy(host_array[0], device_current, sizeof(char) * N * N, cudaMemcpyDeviceToHost);
+       
+        printf("host_array on step %d:\n", i);
+        print_array(host_array, N);
 
         // Swap device_old and device_current
         temp = device_old;
         device_old = device_current;
         device_current = temp;
-
-
     }
-    cudaMemcpy(host_array[0], device_current, sizeof(char) * N * N, cudaMemcpyDeviceToHost);
-    print_array(host_array, N);
     return 0;
 }
