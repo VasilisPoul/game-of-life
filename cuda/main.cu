@@ -174,25 +174,25 @@ int main() {
     print_array(host_array, true, true, N + 2, N + 2, N + 2, N + 2);
 
     // Initialize 2D 'old' array on device
-    cudaMalloc((void **) &device_old, (N + 2) * (N + 2) * sizeof(int));
+    cudaMalloc((void **) &device_old, (N + 2) * (N + 2) * sizeof(char));
 
     // Copy 2D 'old' array on device
-    cudaMemcpy(device_old, host_array[0], (N + 2) * (N + 2) * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(device_old, host_array[0], (N + 2) * (N + 2) * sizeof(char), cudaMemcpyHostToDevice);
 
     // Initialize 2D 'current' array on device
-    cudaMalloc((void **) &device_current, (N + 2) * (N + 2) * sizeof(int));
+    cudaMalloc((void **) &device_current, (N + 2) * (N + 2) * sizeof(char));
 
     // Copy 2D 'current' array on device
-    cudaMemset(device_current, '0', (N + 2) * (N + 2) * sizeof(int));
+    cudaMemset(device_current, '0', (N + 2) * (N + 2) * sizeof(char));
 
     // Computations
     for (i = 0; i < STEPS; i++) {
 
-        // call device function
+        // Call device function
         kernel<<<n, m>>>(device_old, device_current);
 
         // Copy 2D 'device_current' array on host
-        cudaMemcpy(host_array[0], device_current, sizeof(int) * (N + 2) * (N + 2), cudaMemcpyDeviceToHost);
+        cudaMemcpy(host_array[0], device_current, sizeof(char) * (N + 2) * (N + 2), cudaMemcpyDeviceToHost);
 
         printf("host_array on step %d:\n", i);
         print_array(host_array, true, true, N + 2, N + 2, N + 2, N + 2);
