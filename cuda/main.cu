@@ -18,7 +18,7 @@
 #define RESET  "\x1B[0m"
 
 #define N 32
-#define M 16
+#define M 4
 #define FILE_NAME "/home/msi/projects/CLionProjects/game-of-life/cuda/test-files/32x32.txt"
 #define STEPS 1
 
@@ -44,23 +44,38 @@ void print_array(char **array, bool split, bool internals, int rowDim, int colDi
     for (int i = 0; i < rowDim; i++) {
         for (int j = 0; j < colDim; j++) {
             if ((rowDim != localRowDim && colDim != localColDim)) {
-//                printf("%s %c ", array[i][j] == '1' ? RED"\u2B1B" RESET : "\u2B1C", (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
-                printf("%c %c ", array[i][j],
+                printf("%s %c ", array[i][j] == '1' ? RED"\u2B1B" RESET : "\u2B1C",
                        (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+//                if (array[i][j]) {
+//                    printf(RED"%5.4d%c" RESET, array[i][j], (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+//                } else {
+//                    printf("%5.4d%c" RESET, array[i][j], (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+//                }
             } else {
                 if ((i == 0 || i == rowDim - 1) || (j == 0 || j == colDim - 1)) {
-//                    printf("%s %c ", array[i][j] == '1' ? B_GREEN"\u2B1B" RESET : "\u2B1C",(split && (j + 1) % localColDim == 0) ? ' ' : '\0');
-                    printf("%c %c ", array[i][j],
+                    printf("%s %c ", array[i][j] == '1' ? B_GREEN"\u2B1B" RESET : "\u2B1C",
                            (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
-
+//                    if (array[i][j]) {
+//                        printf(RED"%5.4d%c" RESET, array[i][j], (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+//                    } else {
+//                        printf("%5.4d%c" RESET, array[i][j], (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+//                    }
                 } else if (internals && ((i == 1 || i == rowDim - 2) || (j == 1 || j == colDim - 2))) {
-//                    printf("%s %c ", array[i][j] == '1' ? BLUE"\u2B1B" RESET : "\u2B1C", (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
-                    printf("%c %c ", array[i][j],
+                    printf("%s %c ", array[i][j] == '1' ? BLUE"\u2B1B" RESET : "\u2B1C",
                            (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+//                    if (array[i][j]) {
+//                        printf(RED"%5.4d%c" RESET, array[i][j], (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+//                    } else {
+//                        printf("%5.4d%c" RESET, array[i][j], (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+//                    }
                 } else {
-//                    printf("%s %c ", array[i][j] == '1' ? RED"\u2B1B" RESET : "\u2B1C", (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
-                    printf("%c %c ", array[i][j],
+                    printf("%s %c ", array[i][j] == '1' ? RED"\u2B1B" RESET : "\u2B1C",
                            (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+//                    if (array[i][j]) {
+//                        printf(RED"%5.4d%c" RESET, array[i][j], (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+//                    } else {
+//                        printf("%5.4d%c" RESET, array[i][j], (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+//                    }
                 }
             }
         }
@@ -72,77 +87,62 @@ void print_array(char **array, bool split, bool internals, int rowDim, int colDi
 // Device code
 __global__ void kernel(char *old, char *current) {
     __shared__ char local[M + 2][M + 2];
-
-    unsigned int ix = blockIdx.x * (blockDim.x) + threadIdx.x;
-    unsigned int iy = blockIdx.y * (blockDim.y) + threadIdx.y;
-    unsigned int idx = iy * (N) + ix;
-
     unsigned int local_row = threadIdx.x;
     unsigned int local_col = threadIdx.y;
     unsigned int local_thread_id = local_col + local_row * M;
 
-    unsigned int index = idx + 2 * local_row - 2 * blockIdx.y - N * blockIdx.x;
-    old[idx] = '2';
-
-
-
-
-    /*    //old[index - N] = '0';
-    // Up
-
-    if (blockIdx.x == 0) {
-        //old[index - N] = old[index + N * (N - 1)];
-        //old[index - N] = '1';
-    }
-
-    // Down
-    if (blockIdx.x == blockDim.x) {
-
-    }
+    unsigned int ix = blockIdx.x * (blockDim.x) + threadIdx.x;
+    unsigned int iy = blockIdx.y * (blockDim.y) + threadIdx.y;
+    unsigned int idx = (ix + 1) + (iy + 1) * (N + 2);
 
     // Left
-    if (blockIdx.y == 0) {
-
+    if (blockIdx.x == 0 && threadIdx.x == 0) {
+        old[idx - 1] = old[idx + N - 1];
     }
 
     // Right
-    if (blockIdx.y == blockDim.y) {
+    if (blockIdx.x == blockDim.x + blockDim.x - 1 && threadIdx.x == blockDim.x - 1) {
+        old[idx + 1] = old[idx - N + 1];
+    }
 
-    }*/
+    // Up right
+    if (blockIdx.y == 0 && threadIdx.x == blockDim.x - 1) {
+        old[N + 1] = old[(N + 1) * (N + 1)];;
+    }
+
+    // Up
+    if (blockIdx.y == 0 && threadIdx.y == 0) {
+        old[idx - N - 2] = old[idx + N - 2 + N * N];
+    }
+
+    // Up left
+    if (blockIdx.y == 0 && threadIdx.x == 0 && threadIdx.y == 0) {
+        old[0] = old[(N + 1) * (N + 1) + N - 1];
+    }
+
+    // Down
+    if (blockIdx.y == blockDim.y + blockDim.x - 1 && threadIdx.y == blockDim.y - 1) {
+        old[idx + N + 2] = old[idx - N + 2 - N * N];
+    }
+
+    // Down right
+    if (blockIdx.y == blockDim.y + blockDim.x - 1 && threadIdx.y == blockDim.y - 1) {
+        old[(N + 2) * (N + 1) + N + 1] = old[N + 2 + 1];
+    }
+
+    // Down left
+    if (blockIdx.y == blockDim.y + blockDim.x - 1 && threadIdx.y == 0) {
+        old[(N + 2) * (N + 1)] = old[N + 2 + N];
+    }
+
+    //Todo: initialize local array
+
     //local[local_row][local_col] = old[index];
+
     __syncthreads();
 
-/*    if (blockIdx.x == 0 && blockIdx.y == 0) {
-        if (global_row == 0 && iy == 0) {
+    //Todo: Calculate cells
 
-            printf("BC[%d][%d] - TGC[%d][%d]=%d - local:%c\n",
-                   blockIdx.x, blockIdx.y,
-                   global_row, iy, global_thread_id,
-                   local[local_row][local_col]
-            );
-
-//            for (int i = 0; i < M + 2; i++) {
-//                for (int j = 0; j < M + 2; j++) {
-//                    printf("%c ", local[i][j]);
-//                }
-//                printf("\n");
-//            }
-//            printf("\n");
-
-            printf("\n");
-            for (int i = 0; i < M + 2; i++) {
-                for (int j = 0; j < M + 2; j++) {
-                    printf("%s  ", local[i][j] == '1' ? RED"\u2B1B" RESET : "\u2B1C");
-                }
-                printf("\n");
-            }
-            printf("\n");
-
-
-        }
-    }*/
-
-//printf("BC[%d][%d] - TGC[%d][%d]=%d\n", blockIdx.x, blockIdx.y, global_row, iy, global_thread_id);
 }
 
 //Host Code
@@ -150,11 +150,11 @@ int main() {
     char **host_array = nullptr, *device_old = nullptr, *device_current = nullptr, *temp = nullptr;;
     int i = 0, fd = 0;
 
+    // Threads (2D) per block
     dim3 m(M, M);
 
-    dim3 n((unsigned int) ((N + (float) M - 1) / (float) M),
-           (unsigned int) ((N + (float) M - 1) / (float) M)
-    );
+    // Blocks (2D grid)
+    dim3 n((unsigned int) ((N + (float) M - 1) / (float) M), (unsigned int) ((N + (float) M - 1) / (float) M));
 
     assert(N != M * m.x);
 
@@ -162,40 +162,42 @@ int main() {
     host_array = allocate2DArray(N + 2, N + 2);
 
     // Read file
-    /*
-        if ((fd = open(FILE_NAME, O_RDONLY)) < 0) {
-            fprintf(stderr, "Could not open file \"%s\"\n", FILE_NAME);
-            return -1;
-        }
-        i = 1;
-        while (read(fd, &host_array[i][1], N)) {
-            i++;
-        }
-        close(fd);*/
+    if ((fd = open(FILE_NAME, O_RDONLY)) < 0) {
+        fprintf(stderr, "Could not open file \"%s\"\n", FILE_NAME);
+        return -1;
+    }
+    i = 1;
+    while (read(fd, &host_array[i++][1], N));
+    close(fd);
 
     printf("host_array before:\n");
     print_array(host_array, true, true, N + 2, N + 2, N + 2, N + 2);
 
-    // Send 2D to the Device
-    cudaMalloc((void **) &device_old, (N + 2) * (N + 2) * sizeof(char));
-    cudaMemcpy(device_old, host_array[0], (N + 2) * (N + 2) * sizeof(char), cudaMemcpyHostToDevice);
+    // Initialize 2D 'old' array on device
+    cudaMalloc((void **) &device_old, (N + 2) * (N + 2) * sizeof(int));
 
-    cudaMalloc((void **) &device_current, (N + 2) * (N + 2) * sizeof(char));
-    cudaMemset(device_current, '0', (N + 2) * (N + 2) * sizeof(char));
+    // Copy 2D 'old' array on device
+    cudaMemcpy(device_old, host_array[0], (N + 2) * (N + 2) * sizeof(int), cudaMemcpyHostToDevice);
+
+    // Initialize 2D 'current' array on device
+    cudaMalloc((void **) &device_current, (N + 2) * (N + 2) * sizeof(int));
+
+    // Copy 2D 'current' array on device
+    cudaMemset(device_current, '0', (N + 2) * (N + 2) * sizeof(int));
 
     // Computations
     for (i = 0; i < STEPS; i++) {
-        //todo: fill halo cells on device_old array
 
-        //call device function
+        // call device function
         kernel<<<n, m>>>(device_old, device_current);
 
-        cudaMemcpy(host_array[0], device_old, sizeof(char) * (N + 2) * (N + 2), cudaMemcpyDeviceToHost);
+        // Copy 2D 'device_current' array on host
+        cudaMemcpy(host_array[0], device_current, sizeof(int) * (N + 2) * (N + 2), cudaMemcpyDeviceToHost);
 
         printf("host_array on step %d:\n", i);
         print_array(host_array, true, true, N + 2, N + 2, N + 2, N + 2);
 
-        // Swap device_old and device_current
+        // Swap 'device_old' and 'device_current' arrays
         temp = device_old;
         device_old = device_current;
         device_current = temp;
