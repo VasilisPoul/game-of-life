@@ -96,24 +96,10 @@ __global__ void kernel(int *old, int *current) {
     unsigned int idx = (ix + 1) * (N + 2) + (iy + 1);
 
     // if (blockIdx.x == 1 && blockIdx.y == 1 )
-    //old[idx] = idx;
+    old[idx] = idx;
     //lcoal[idx] = idx;
 
     __syncthreads();
-
-
-    if (blockIdx.x == 0 && blockIdx.y == 0) {
-        old[idx] = idx;
-        local[local_row][local_col] = idx;
-
-
-
-
-    }
-
-    __syncthreads();
-
-
 
 
 
@@ -162,6 +148,48 @@ __global__ void kernel(int *old, int *current) {
 
 
 
+    if (blockIdx.x == 0 && blockIdx.y == 0) {
+        old[idx] = idx;
+        local[local_row + 1][local_col + 1] = idx;
+        
+        __syncthreads();
+
+
+        // Up
+        if (local_row == 0) {
+            local[local_row][local_col + 1] = old[idx + N - 2 + N * N];
+        }
+
+        printf("BLOCKDIM x: %d\n", blockDim.x);
+
+        // // Down
+        // if (local_row == blockDim.x - 1) {
+        //     local[local_row][local_col + 1] = old[idx - N + 2 - N * N];
+        // }
+
+
+
+        if (ix == 0 && iy == 0) {
+
+            for (int i = 0; i < M + 2; i++) {
+                for (int j = 0; j < M + 2; j++) {
+                    printf("%5.4d ", local[i][j]);
+                }
+                printf("\n");
+            }
+            printf("\n");
+        }
+    }
+
+    __syncthreads();
+
+
+
+
+
+
+
+
 
 
      __syncthreads();
@@ -185,7 +213,7 @@ int main() {
     int i = 0, fd = 0;
 
     // Threads (2D) per block
-    dim3 m(M, M);
+    dim3 m(M+2, M+2);
 
     // Blocks (2D grid)
     dim3 n((unsigned int) ((N + (float) M - 1) / (float) M), (unsigned int) ((N + (float) M - 1) / (float) M));
