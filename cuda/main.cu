@@ -17,7 +17,7 @@
 /*RESET COLOR*/
 #define RESET  "\x1B[0m"
 
-#define N 64
+#define N 8
 #define M 4
 #define FILE_NAME "/home/msi/projects/CLionProjects/game-of-life/cuda/test-files/64x64.txt"
 #define STEPS 1
@@ -96,74 +96,53 @@ __global__ void kernel(int *old, int *current) {
     unsigned int idx = (ix + 1) * (N + 2) + (iy + 1);
 
     // if (blockIdx.x == 1 && blockIdx.y == 1 )
-   old[idx] = idx;
+    old[idx] = idx;
 
     __syncthreads();
 
-    //Working
-
-    // // Right
-    // if (blockIdx.y == gridDim.y - 1 && threadIdx.y == blockDim.y - 1) {
-    //     old[idx + 1] = old[idx - N + 1];
-    //     // old[idx + 1] =idx;
-    //     // old[idx] =idx;
-    // }
-
-    // // Up right
-    // if (blockIdx.y == gridDim.y - 1 && blockIdx.x == 0 && threadIdx.x == 0 && threadIdx.y == blockDim.y - 1) {
-    //     old[N + 1] = old[(N + 1) * (N + 1)];;
-    //     //old[idx] =idx;
-    // }
-
-    // // Down
-    // if (blockIdx.x == gridDim.x - 1 && threadIdx.x == blockDim.x - 1) {
-    //     old[idx + N + 2] = old[idx - N + 2 - N * N];
-    //     // old[idx] =idx;
-    // }
-
-    // // Down right
-    // if (blockIdx.y == gridDim.y - 1 && blockIdx.x == gridDim.x - 1 && threadIdx.x == blockDim.x - 1 &&
-    //     threadIdx.y == blockDim.y - 1) {
-    //     old[(N + 2) * (N + 1) + N + 1] = old[N + 2 + 1];
-    //     // old[idx] =idx;
-    // }
-
-    // // Down left
-    // if (blockIdx.y == 0 && blockIdx.x == gridDim.x - 1 && threadIdx.x == blockDim.x - 1 && threadIdx.y == 0) {
-    //     old[(N + 2) * (N + 1)] = old[N + 2 + N];
-    //     // old[idx] =idx;
-    // }
-
-    // Not Working!!!!!
-
     // Left
+    if (blockIdx.y == 0 && threadIdx.y == 0) {
+        old[idx - 1] = old[idx + N - 1];
+    }
 
+    // Right
+    if (blockIdx.y == gridDim.y - 1 && threadIdx.y == blockDim.y - 1) {
+        old[idx + 1] = old[idx - N + 1];
+    }
 
+    // Up right
+    if (blockIdx.y == gridDim.y - 1 && blockIdx.x == 0 && threadIdx.x == 0 && threadIdx.y == blockDim.y - 1) {
+        old[N + 1] = old[(N + 1) * (N + 1)];;
+    }
 
-    // if (blockIdx.y == 0 && threadIdx.y == 0) {
-    //    old[idx - 1] = old[idx + 15 ];
-    // //    old[idx - 1] =idx-1;
-    // //    old[idx + N - 1] = idx + N - 1;
-    // }
+    // Up
+    if (blockIdx.x == 0 && threadIdx.x == 0) {
+        old[idx - N - 2] = old[idx + N - 2 + N * N];
+    }
 
+    // Down
+    if (blockIdx.x == gridDim.x - 1 && threadIdx.x == blockDim.x - 1) {
+        old[idx + N + 2] = old[idx - N + 2 - N * N];
+    }
 
-    // // Up
-    // if (blockIdx.x == 0 && threadIdx.x == 0) {
-    //     old[idx - N - 2] = old[idx + N - 2 + N * N];
-    //     // old[idx] =idx;
-    // }
+    // Down right
+    if (blockIdx.y == gridDim.y - 1 && blockIdx.x == gridDim.x - 1 && threadIdx.x == blockDim.x - 1 &&
+        threadIdx.y == blockDim.y - 1) {
+        old[(N + 2) * (N + 1) + N + 1] = old[N + 2 + 1];
+    }
 
-    
+    // Down left
+    if (blockIdx.y == 0 && blockIdx.x == gridDim.x - 1 && threadIdx.x == blockDim.x - 1 && threadIdx.y == 0) {
+        old[(N + 2) * (N + 1)] = old[N + 2 + N];
+    }
+
     // // Up left
-    // if (blockIdx.y == 0 && blockIdx.x == 0 && threadIdx.x == 0 && threadIdx.y == 0) {
-    //     // old[0] = old[(N + 1) * (N + 1) + N - 2];
-    //     old[idx - N - 3] =idx;
-    //     old[(N + 1) * (N + 1) + N - 1] =idx;
-    // }
+    if (blockIdx.y == 0 && blockIdx.x == 0 && threadIdx.x == 0 && threadIdx.y == 0) {
+        old[idx - N - 3] = old[(N + 1) * (N + 1) + N - 1];
+    }
 
+     __syncthreads();
 
-
-   // __syncthreads();
     //Todo: initialize local array
 
     //local[local_row][local_col] = old[index];
