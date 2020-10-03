@@ -17,7 +17,7 @@
 /*RESET COLOR*/
 #define RESET  "\x1B[0m"
 
-#define N 8
+#define N 32
 #define M 4
 #define FILE_NAME "/home/msi/projects/CLionProjects/game-of-life/cuda/test-files/64x64.txt"
 #define STEPS 1
@@ -86,7 +86,7 @@ void print_array(int **array, bool split, bool internals, int rowDim, int colDim
 
 // Device code
 __global__ void kernel(int *old, int *current) {
-    __shared__ char local[M + 2][M + 2];
+    __shared__ int local[M + 2][M + 2];
     unsigned int local_row = threadIdx.x;
     unsigned int local_col = threadIdx.y;
     unsigned int local_thread_id = local_col + local_row * M;
@@ -96,9 +96,32 @@ __global__ void kernel(int *old, int *current) {
     unsigned int idx = (ix + 1) * (N + 2) + (iy + 1);
 
     // if (blockIdx.x == 1 && blockIdx.y == 1 )
-    old[idx] = idx;
+    //old[idx] = idx;
+    //lcoal[idx] = idx;
 
     __syncthreads();
+
+
+    if (blockIdx.x == 0 && blockIdx.y == 0) {
+        old[idx] = idx;
+        local[local_row][local_col] = idx;
+
+
+
+
+    }
+
+    __syncthreads();
+
+
+
+
+
+
+    // Up
+    if (blockIdx.x == 0 && threadIdx.x == 0) {
+        old[idx - N - 2] = old[idx + N - 2 + N * N];
+    }
 
     // Left
     if (blockIdx.y == 0 && threadIdx.y == 0) {
@@ -113,11 +136,6 @@ __global__ void kernel(int *old, int *current) {
     // Up right
     if (blockIdx.y == gridDim.y - 1 && blockIdx.x == 0 && threadIdx.x == 0 && threadIdx.y == blockDim.y - 1) {
         old[N + 1] = old[(N + 1) * (N + 1)];;
-    }
-
-    // Up
-    if (blockIdx.x == 0 && threadIdx.x == 0) {
-        old[idx - N - 2] = old[idx + N - 2 + N * N];
     }
 
     // Down
@@ -140,6 +158,11 @@ __global__ void kernel(int *old, int *current) {
     if (blockIdx.y == 0 && blockIdx.x == 0 && threadIdx.x == 0 && threadIdx.y == 0) {
         old[idx - N - 3] = old[(N + 1) * (N + 1) + N - 1];
     }
+
+
+
+
+
 
      __syncthreads();
 
