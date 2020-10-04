@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <assert.h>
+#include <time.h>
 
 /*COLOR*/
 #define RED "\x1B[31m"
@@ -255,6 +256,8 @@ __global__ void kernel(int *old, int *current) {
 int main() {
     int **host_array = nullptr, *device_old = nullptr, *device_current = nullptr, *temp = nullptr;;
     int i = 0, fd = 0;
+    double time_spent = 0.0;
+    clock_t begin, end;
 
     // Threads (2D) per block
     dim3 m(M, M);
@@ -291,6 +294,7 @@ int main() {
     // Copy 2D 'current' array on device
     cudaMemset(device_current, '0', N * N * sizeof(int));
 
+    begin = clock();
 
     // Computations
     for (i = 0; i < STEPS; i++) {
@@ -310,6 +314,11 @@ int main() {
         device_current = temp;
     }
 
+    end = clock();
+
+    time_spent = (double) (end - begin) / CLOCKS_PER_SEC;
+
+    printf("time_spent=%f\n", time_spent);
 
     // Free memory
     cudaFree(device_old);
