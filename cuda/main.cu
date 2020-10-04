@@ -18,7 +18,7 @@
 /*RESET COLOR*/
 #define RESET  "\x1B[0m"
 
-#define N 32
+#define N 16
 #define M 4
 #define FILE_NAME "/home/msi/projects/CLionProjects/game-of-life/cuda/test-files/64x64.txt"
 #define STEPS 1
@@ -140,27 +140,115 @@ __global__ void kernel(int *old, int *current) {
     //         local[local_row + 3][local_col + 3] = old[idx + 2 * N + 2];
     //     }
     // } else {
-        // Todo: calculate external blocks
+        // // Todo: calculate external blocks
+
+
+
+        // //internals
+        // local[local_row + 1][local_col + 1] = old[idx];
+
+        // //up
+        // if (local_row == 0){
+        //     local[local_row][local_col + 1] = old[idx + (N-1) * N];
+        // }
+        // //down idio me ta apo panw 
+        // if (local_row == blockDim.x - 2){
+        //     local[local_row + 3][local_col + 1] = old[idx + 2 * N];
+        // }
+        // //left
+        // if (local_col == 0){
+        //     //full aristera
+        //     if (blockIdx.y == 0){
+        //         local[local_row + 1][local_col] = old[idx + N - 1];
+        //     }
+        //     else{
+        //         local[local_row + 1][local_col] = old[idx - 1];
+        //     }
+        // }
+        // //right
+        // if(local_col == blockDim.y-1){
+            
+        //     if (blockIdx.y != gridDim.y - 1){
+                
+        //         local[local_row + 1][local_col+2] = old[idx + 1];  
+        //     }
+        //     //full deksia
+        //     else{
+        //         printf("Hey!!!\n");
+        //         local[local_row + 1][local_col + 2] = old[idx - N+1];
+                
+        //         printf("local_row+1: %d, local_col+2: %d\n", local_row+1, local_col+2);
+        //         printf("old[idx + 1]: %5.4d\n", old[idx + 1]); 
+        //     }
+        // }
+        // //up left
+        // if(local_col == 0 && local_row == 0){
+        //     //terma aristera block
+        //     if (blockIdx.y == 0){
+        //         local[local_row][local_col] = old[idx + N * N - 1];
+        //     }
+        //     else{
+                
+        //         local[local_row][local_col] = old[idx + (N-1)*N - 1];
+        //     }
+        // }
+        // //up right
+        // if (local_row == 0 && local_col == blockDim.y - 2){
+        //     if(blockIdx.y != gridDim.y - 1){
+        //         local[local_row][local_col + 3] = old[idx + (N-1)*N + 2]; 
+        //     }
+        //     //terma deksia
+        //     else{
+        //         local[local_row][local_col + 3] = old[idx + (N-1)*N- N+2 ];
+        //     }
+        // }
+        // //down left
+        // if(local_row == blockDim.x - 2 && local_col == 0){
+        //     //terma aristera block
+        //     if (blockIdx.y == 0){
+        //         local[local_row+3][local_col] = old[idx + 3 * N - 1];
+        //     }
+        //     else {
+        //         local[local_row+3][local_col] = old[idx + 3 * N - 1 - N];
+        //     }
+        // }
+        // //down right
+        // if (local_row == blockDim.x-2 && local_col == blockDim.y - 2){
+        //     if(blockIdx.y != gridDim.y - 1){
+        //         local[local_row + 3][local_col + 3] = old[idx + 2*N +2];   
+        //     }
+        //     //terma deksia
+        //     else {
+        //         //TODO
+        //         local[local_row + 3][local_col + 3] = old[idx + N +2];
+        //         // printf("local_row+3: %d, local_col+3: %d\n", local_row+3, local_col+3);
+        //         // printf("old[idx + N +2]: %5.4d\n", old[idx + N +2]); 
+        //     }
+        // }            
+
+
 
         old[idx] = idx;
 
-        if (blockIdx.x == 0 && blockIdx.y == 7) {
-            //internals
+        if (blockIdx.x == gridDim.x - 1 && blockIdx.y == 3) {
             local[local_row + 1][local_col + 1] = old[idx];
 
             //up
             if (local_row == 0){
-                local[local_row][local_col + 1] = old[idx + (N-1) * N];
+                //idio me apo panw
+                local[local_row][local_col + 1] = old[idx - N];
             }
             //down idio me ta apo panw 
-            if (local_row == blockDim.x - 2){
-                local[local_row + 3][local_col + 1] = old[idx + 2 * N];
+            if (local_row == blockDim.x - 1){
+                local[local_row + 2][local_col + 1] = old[idx - N*(N-1)]; 
             }
             //left
             if (local_col == 0){
                 //full aristera
                 if (blockIdx.y == 0){
                     local[local_row + 1][local_col] = old[idx + N - 1];
+                    // printf("local_row+1: %d, local_col: %d\n", local_row+1, local_col);
+                    // printf("old[idx + N - 1]: %5.4d\n", old[idx + N - 1]); 
                 }
                 else{
                     local[local_row + 1][local_col] = old[idx - 1];
@@ -175,65 +263,68 @@ __global__ void kernel(int *old, int *current) {
                 }
                 //full deksia
                 else{
-                    printf("Hey!!!\n");
                     local[local_row + 1][local_col + 2] = old[idx - N+1];
-                    
-                    printf("local_row+1: %d, local_col+2: %d\n", local_row+1, local_col+2);
-                    printf("old[idx + 1]: %5.4d\n", old[idx + 1]); 
+                     
                 }
             }
             //up left
             if(local_col == 0 && local_row == 0){
                 //terma aristera block
                 if (blockIdx.y == 0){
-                    local[local_row][local_col] = old[idx + N * N - 1];
+                    local[local_row][local_col] = old[idx -1];
                 }
                 else{
-                    
-                    local[local_row][local_col] = old[idx + (N-1)*N - 1];
+                    local[local_row][local_col] = old[idx - N -1];
                 }
             }
             //up right
-            if (local_row == 0 && local_col == blockDim.y - 2){
+            if (local_row == 0 && local_col == blockDim.y - 1){
                 if(blockIdx.y != gridDim.y - 1){
-                    local[local_row][local_col + 3] = old[idx + (N-1)*N + 2]; 
+                    local[local_row][local_col + 2] = old[idx - N + 1]; 
+
                 }
                 //terma deksia
                 else{
-                    local[local_row][local_col + 3] = old[idx + (N-1)*N- N+2 ];
+                    //TODO
+                    local[local_row][local_col + 2] = old[idx- 2*N +1];
                 }
             }
             //down left
-            if(local_row == blockDim.x - 2 && local_col == 0){
+            if(local_row == blockDim.x - 1 && local_col == 0){
                 //terma aristera block
                 if (blockIdx.y == 0){
-                    local[local_row+3][local_col] = old[idx + 3 * N - 1];
+                    local[local_row+2][local_col] = old[idx - (N-1) * (N-1) ];  
                 }
+                
                 else {
-                    local[local_row+3][local_col] = old[idx + 3 * N - 1 - N];
+                    local[local_row+2][local_col] = old[idx - N * (N-1)-1];
+
+                    printf("local_row+2: %d, local_col: %d\n", local_row+2, local_col);
+                    printf("old[idx-N-1]: %5.4d\n", old[idx - N * (N-1)-1]);
                 }
             }
             //down right
-            if (local_row == blockDim.x-2 && local_col == blockDim.y - 2){
+            if (local_row == blockDim.x-1 && local_col == blockDim.y - 1){
                 if(blockIdx.y != gridDim.y - 1){
-                    local[local_row + 3][local_col + 3] = old[idx + 2*N +2];   
+                    
+                    local[local_row+2][local_col+2] = old[idx - (N-1) * N + 1];
                 }
-                //terma deksia
-                else {
-                    //TODO
-                    local[local_row + 3][local_col + 3] = old[idx + N +2];
-                    // printf("local_row+3: %d, local_col+3: %d\n", local_row+3, local_col+3);
-                    // printf("old[idx + N +2]: %5.4d\n", old[idx + N +2]); 
+                else if (blockIdx.y == gridDim.y - 1){
+                    local[local_row+2][local_col+2] = old[idx -(N-1)*N + 1 - N];
+
+                    printf("local_row+2: %d, local_col: %d\n", local_row+2, local_col);
+                    printf("old[idx-N-1]: %5.4d\n", old[idx -(N-1)*N + 1 - N]);
                 }
+               
             }            
+
 
         }
         
 
         __syncthreads();
        //print block
-
-       if (ix == 0 && iy == 28) {
+       if (ix == N-M && iy == 12) {
            for (int i = 0; i < M + 2; i++) {
                for (int j = 0; j < M + 2; j++) {
                     if (i > 0 && i < M+1 && j > 0 && j < M+1){
