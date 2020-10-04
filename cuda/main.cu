@@ -17,7 +17,7 @@
 /*RESET COLOR*/
 #define RESET  "\x1B[0m"
 
-#define N 32
+#define N 16
 #define M 4
 #define FILE_NAME "/home/msi/projects/CLionProjects/game-of-life/cuda/test-files/64x64.txt"
 #define STEPS 1
@@ -95,84 +95,75 @@ __global__ void kernel(int *old, int *current) {
     unsigned int iy = blockIdx.y * (blockDim.y) + threadIdx.y;
     unsigned int idx = ix * N + iy;
 
-    // if (blockIdx.x == 1 && blockIdx.y == 1 )
-    old[idx] = idx;
-    // //lcoal[idx] = idx;
+    // split internals
+    if (blockIdx.x > 0 && blockIdx.x < gridDim.x - 1 && blockIdx.y > 0 && blockIdx.y < gridDim.y - 1) {
+        local[local_row + 1][local_col + 1] = old[idx];
 
-    // __syncthreads();
-
-
-    //split internals
-    if(blockIdx.x > 0 && blockIdx.x < gridDim.x -1){
-        if(blockIdx.y > 0 && blockIdx.y < gridDim.y - 1){
-
-
-            if (blockIdx.x == 1 && blockIdx.y == 1) {
-                    // old[idx] = idx;
-                    local[local_row + 1][local_col+1] = idx;
-                    __syncthreads();
-            
-                    //up
-                    if (local_row == 0){
-                        
-                        local[local_row][local_col+1] = old[idx - N];
-                    }
-                    //down
-                    if (local_row == blockDim.x-2){
-                        
-                        local[local_row+3][local_col+1] = old[idx + 2*N];
-                    }
-                    //left
-                    if (local_col == 0){
-                        local[local_row+1][local_col] = old[idx -1];
-                    }
-                    //right
-                    if (local_col == blockDim.y-2){
-                        local[local_row+1][local_col+3] = old[idx +2];
-                    }
-                    //up left
-                    if (local_col == 0 && local_row == 0){
-                        local[local_row][local_col] = old[idx -N -1];
-                    }
-                    //up right
-                    if (local_col == blockDim.y-2 && local_row == 0){
-                        local[local_row][local_col+3] = old[idx -N +2];
-                    }
-                    //down left
-                    if (local_col == 0 && local_row == blockDim.y -2){
-                        local[local_row+3][local_col] = old[idx +2*N -1];
-                        // printf("local[%d][%d]:\n", local_row+3, local_col);
-                        // printf("old[idx +N -1]: %d\n", old[idx +2*N -1]);
-                    }
-                    //down right
-                    if (local_col == blockDim.y-2 && local_row == blockDim.x -2){
-                        local[local_row+3][local_col+3] = old[idx +2*N +2];
-                        // printf("local[%d][%d]:\n", local_row+3, local_col+3);
-                        // printf("old[idx +N -1]: %d\n", old[idx +2*N +2]);
-                    }
-                    
-
-                    //print block
-                    if (ix == 6 && iy == 6) {
-            
-                        for (int i = 0; i < M + 2; i++) {
-                            for (int j = 0; j < M + 2; j++) {
-                                printf("%5.4d ", local[i][j]);
-                            }
-                            printf("\n");
-                        }
-                        printf("\n");
-                    }
-                }
-            
+        //up
+        if (local_row == 0) {
+            local[local_row][local_col + 1] = old[idx - N];
         }
+
+        //down
+        if (local_row == blockDim.x - 2) {
+            local[local_row + 3][local_col + 1] = old[idx + 2 * N];
+        }
+
+        //left
+        if (local_col == 0) {
+            local[local_row + 1][local_col] = old[idx - 1];
+        }
+
+        //right
+        if (local_col == blockDim.y - 2) {
+            local[local_row + 1][local_col + 3] = old[idx + 2];
+        }
+
+        //up left
+        if (local_col == 0 && local_row == 0) {
+            local[local_row][local_col] = old[idx - N - 1];
+        }
+
+        //up right
+        if (local_col == blockDim.y - 2 && local_row == 0) {
+            local[local_row][local_col + 3] = old[idx - N + 2];
+        }
+
+        //down left
+        if (local_col == 0 && local_row == blockDim.y - 2) {
+            local[local_row + 3][local_col] = old[idx + 2 * N - 1];
+        }
+
+        //down right
+        if (local_col == blockDim.y - 2 && local_row == blockDim.x - 2) {
+            local[local_row + 3][local_col + 3] = old[idx + 2 * N + 2];
+        }
+    } else {
+        // Todo: calculate external blocks
+
+        old[idx] = idx;
+
+
+        __syncthreads();
+//        //print block
+//        if (ix == 9 && iy == 9) {
+//            for (int i = 0; i < M + 2; i++) {
+//                for (int j = 0; j < M + 2; j++) {
+//                    printf("%5.4d ", local[i][j]);
+//                }
+//                printf("\n");
+//            }
+//            printf("\n");
+//        }
+
+
     }
-   
+
 
     // if (blockIdx.x == 0 && blockIdx.y == 0) {
     //     // old[idx] = idx;
     //     local[local_row + 1][local_col+1] = idx;
-        
+
     //     __syncthreads();
 
     //     //print block
@@ -241,7 +232,7 @@ __global__ void kernel(int *old, int *current) {
 
 
 
-     __syncthreads();
+    __syncthreads();
 
     //Todo: initialize local array
 
