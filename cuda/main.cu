@@ -18,7 +18,7 @@
 /*RESET COLOR*/
 #define RESET  "\x1B[0m"
 
-#define N 16
+#define N 32
 #define M 4
 #define FILE_NAME "/home/msi/projects/CLionProjects/game-of-life/cuda/test-files/64x64.txt"
 #define STEPS 1
@@ -144,7 +144,7 @@ __global__ void kernel(int *old, int *current) {
 
         old[idx] = idx;
 
-        if (blockIdx.x == 0 && blockIdx.y == 3) {
+        if (blockIdx.x == 0 && blockIdx.y == 7) {
             //internals
             local[local_row + 1][local_col + 1] = old[idx];
 
@@ -167,13 +167,19 @@ __global__ void kernel(int *old, int *current) {
                 }
             }
             //right
-            if(local_col == gridDim.y - 1){
+            if(local_col == blockDim.y-1){
+                
                 if (blockIdx.y != gridDim.y - 1){
+                    
                     local[local_row + 1][local_col+2] = old[idx + 1];  
                 }
                 //full deksia
                 else{
+                    printf("Hey!!!\n");
                     local[local_row + 1][local_col + 2] = old[idx - N+1];
+                    
+                    printf("local_row+1: %d, local_col+2: %d\n", local_row+1, local_col+2);
+                    printf("old[idx + 1]: %5.4d\n", old[idx + 1]); 
                 }
             }
             //up left
@@ -227,7 +233,7 @@ __global__ void kernel(int *old, int *current) {
         __syncthreads();
        //print block
 
-       if (ix == 0 && iy == 12) {
+       if (ix == 0 && iy == 28) {
            for (int i = 0; i < M + 2; i++) {
                for (int j = 0; j < M + 2; j++) {
                     if (i > 0 && i < M+1 && j > 0 && j < M+1){
@@ -298,7 +304,6 @@ int main() {
 
     // Computations
     for (i = 0; i < STEPS; i++) {
-
         // Call device function
         kernel<<<n, m>>>(device_old, device_current);
 
