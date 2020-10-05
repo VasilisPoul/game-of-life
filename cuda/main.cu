@@ -88,6 +88,7 @@ void print_array(int **array, bool split, bool internals, int rowDim, int colDim
 // Device code
 __global__ void kernel(int *old, int *current, int *changes) {
     __shared__ int local[M + 2][M + 2];
+    int sum = 0;
     unsigned int local_row = threadIdx.x;
     unsigned int local_col = threadIdx.y;
     unsigned int local_thread_id = local_col + local_row * M;
@@ -361,42 +362,17 @@ __global__ void kernel(int *old, int *current, int *changes) {
 
     __syncthreads();
 
-    if(blockIdx.x ==0 && blockIdx.y == 0){
-        unsigned int x = local_row+1;
-        unsigned int y = local_col+1;
+    // Calculate cells
+    sum = (local[local_row][local_col] - 48) +
+          (local[local_row][local_col + 1] - 48) +
+          (local[local_row][local_col + 2] - 48) +
+          (local[local_row + 1][local_col] - 48) +
+          (local[local_row + 1][local_col + 2] - 48) +
+          (local[local_row + 2][local_col] - 48) +
+          (local[local_row + 2][local_col + 1] - 48) +
+          (local[local_row + 2][local_col + 2] - 48);
 
-        // Calculate cells
-        int sum = (local[local_row][local_col]) +
-                  (local[local_row][local_col+1]) +
-                  (local[local_row][local_col + 2]) +
-                  (local[local_row+1][local_col]) +
-                  (local[local_row+1][local_col + 2]) +
-                  (local[local_row+2][local_col]) +
-                  (local[local_row + 2][local_col+1]) +
-                  (local[local_row + 2][local_col + 2]);
-
-        printf("%5.4d %d\n", idx, sum);
-    }
-
-    //print block
-    if (ix == 0 && iy == 0) {
-
-
-        for (int i = 0; i < M + 2; i++) {
-            for (int j = 0; j < M + 2; j++) {
-                if (i > 0 && i < M + 1 && j > 0 && j < M + 1) {
-                    printf(RED"%5.4d " RESET, local[i][j]);
-                } else {
-                    printf("%5.4d ", local[i][j]);
-                }
-            }
-            printf("\n");
-        }
-        printf("\n");
-
-    }
-
-/*    // Is alive
+    // Is alive
     if ((local[local_row][local_col]) == '1') {
         if (sum <= 1 || sum >= 4) {
             current[idx] = '0';
@@ -409,11 +385,7 @@ __global__ void kernel(int *old, int *current, int *changes) {
         (*changes)++;
     } else {
         current[idx] = '0';
-    }*/
-
-
-
-
+    }
 
 }
 
