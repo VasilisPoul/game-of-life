@@ -96,12 +96,13 @@ __global__ void kernel(int *old, int *current, int *changes) {
     unsigned int iy = blockIdx.y * (blockDim.y) + threadIdx.y;
     unsigned int idx = ix * N + iy;
 
+    // Todo: get rid of this
     old[idx] = idx;
 
+    local[local_row + 1][local_col + 1] = old[idx];
 
     // split internals
     if (blockIdx.x > 0 && blockIdx.x < gridDim.x - 1 && blockIdx.y > 0 && blockIdx.y < gridDim.y - 1) {
-        local[local_row + 1][local_col + 1] = old[idx];
 
         //up
         if (local_row == 0) {
@@ -142,13 +143,14 @@ __global__ void kernel(int *old, int *current, int *changes) {
         if (local_col == blockDim.y - 2 && local_row == blockDim.x - 2) {
             local[local_row + 3][local_col + 3] = old[idx + 2 * N + 2];
         }
+
+
+
+
+
+
     } else {
-        // Todo: calculate external blocks
-
         if (blockIdx.x == 0) {
-            //internals
-            local[local_row + 1][local_col + 1] = old[idx];
-
             //up
             if (local_row == 0) {
                 local[local_row][local_col + 1] = old[idx + (N - 1) * N];
@@ -230,8 +232,6 @@ __global__ void kernel(int *old, int *current, int *changes) {
         }
 
         if (blockIdx.x == gridDim.x - 1) {
-            local[local_row + 1][local_col + 1] = old[idx];
-
             //up
             if (local_row == 0) {
                 //idio me apo panw
@@ -277,9 +277,7 @@ __global__ void kernel(int *old, int *current, int *changes) {
                 if (blockIdx.y != gridDim.y - 1) {
                     local[local_row][local_col + 2] = old[idx - N + 1];
 
-                }
-                else { //terma deksia
-                    //TODO
+                } else { //terma deksia
                     local[local_row][local_col + 2] = old[idx - 2 * N + 1];
                 }
             }
@@ -306,9 +304,7 @@ __global__ void kernel(int *old, int *current, int *changes) {
 
         }
 
-        if (blockIdx.x > 0 && blockIdx.x < blockDim.x - 1 && blockIdx.y == 0) {
-            local[local_row + 1][local_col + 1] = old[idx];
-
+        if (blockIdx.x > 0 && blockIdx.x < gridDim.x - 1 && blockIdx.y == 0) {
             //up
             if (local_row == 0) {
                 local[local_row][local_col + 1] = old[idx - N];
@@ -355,13 +351,11 @@ __global__ void kernel(int *old, int *current, int *changes) {
 
         }
 
-        if (blockIdx.x > 0 && blockIdx.x < blockDim.x - 1 && blockIdx.y == blockDim.y - 1) {
-            local[local_row+1][local_col+1] = old[idx];
-             //up
-             if (local_row == 0) {
+        if (blockIdx.x > 0 && blockIdx.x < gridDim.x - 1 && blockIdx.y == gridDim.y - 1) {
+            //up
+            if (local_row == 0) {
                 local[local_row][local_col + 1] = old[idx - N];
             }
-
             //down
             if (local_row == blockDim.x - 2) {
                 local[local_row + 3][local_col + 1] = old[idx + 2 * N];
@@ -378,30 +372,24 @@ __global__ void kernel(int *old, int *current, int *changes) {
             if (local_col == 0 && local_row == blockDim.y - 2) {
                 local[local_row + 3][local_col] = old[idx + 2 * N - 1];
             }
-
             //right
             if (local_col == blockDim.y - 1) {
                 local[local_row + 1][local_col + 2] = old[idx - N + 1];
             }
-
-
             //up right
-
-
             if (local_row == 0 && local_col == blockDim.y - 1) {
-                local[local_row][local_col + 2] = old[idx - 2 * N + 1];                
+                local[local_row][local_col + 2] = old[idx - 2 * N + 1];
             }
-
-
             if (local_row == blockDim.x - 2 && local_col == blockDim.y - 2) {
-                    local[local_row + 3][local_col + 3] = old[idx + N + 2];
+                local[local_row + 3][local_col + 3] = old[idx + N + 2];
             }
         }
     }
 
     __syncthreads();
+
     //print block
-    if (ix ==12 && iy == 12) {
+    if (ix == 12 && iy == 0) {
         for (int i = 0; i < M + 2; i++) {
             for (int j = 0; j < M + 2; j++) {
                 if (i > 0 && i < M + 1 && j > 0 && j < M + 1) {
@@ -417,9 +405,7 @@ __global__ void kernel(int *old, int *current, int *changes) {
 
     }
 
-
-
-        __syncthreads();
+    __syncthreads();
 
 /*    // Calculate cells
     int sum = (local[local_row - 1][local_col - 1] - 48) +
@@ -445,7 +431,6 @@ __global__ void kernel(int *old, int *current, int *changes) {
     } else {
         current[idx] = '0';
     }*/
-   
 
 }
 
@@ -463,7 +448,7 @@ int main() {
     // Blocks (2D grid)
     dim3 n((unsigned int) ((N + (float) M - 1) / (float) M), (unsigned int) ((N + (float) M - 1) / (float) M));
 
-    //assert(N == M * M * 2);
+    assert(N * N == M * M * (n.x * n.y));
 
     // Array allocations
     host_array = allocate2DArray(N, N);
