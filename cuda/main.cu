@@ -13,9 +13,9 @@
 /*RESET COLOR*/
 #define RESET  "\x1B[0m"
 
-#define N 32
+#define N 7680
 #define M 4
-#define FILE_NAME "/home/msi/projects/CLionProjects/game-of-life/cuda/test-files/32x32.txt"
+#define FILE_NAME "/home/msi/projects/CLionProjects/game-of-life/cuda/test-files/7680x7680.txt"
 #define STEPS 1000
 
 char **allocate2DArray(int rows, int columns) {
@@ -35,14 +35,14 @@ void free2DArray(char **block) {
     free(block);
 }
 
-void print_array(char **array, bool split, int rowDim, int colDim, int localRowDim, int localColDim) {
+void print_array(char **array, bool split, int dim, int localDim) {
     printf("\n");
-    for (int i = 0; i < rowDim; i++) {
-        for (int j = 0; j < colDim; j++) {
+    for (int i = 0; i < dim; i++) {
+        for (int j = 0; j < dim; j++) {
             printf("%s %c ", array[i][j] == '1' ? RED"\u2B1B" RESET : "\u2B1C",
-                   (split && (j + 1) % localColDim == 0) ? ' ' : '\0');
+                   (split && (j + 1) % localDim == 0) ? ' ' : '\0');
         }
-        printf("\n%c", (split && (i + 1) % localRowDim == 0) ? '\n' : '\0');
+        printf("\n%c", (split && (i + 1) % localDim == 0) ? '\n' : '\0');
     }
     printf("\n");
 }
@@ -332,17 +332,15 @@ int main() {
     // Array allocations
     host_array = allocate2DArray(N, N);
 
-//    // Read file
-    if ((fd = open(FILE_NAME, O_RDONLY)) < 0) {
-        fprintf(stderr, "Could not open file \"%s\"\n", FILE_NAME);
-        return -1;
-    }
+    // Read file
+    fd = open(FILE_NAME, O_RDONLY);
+    assert(fd > 0);
     i = 0;
     while (read(fd, &host_array[i++][0], N));
     close(fd);
 
-    printf("host_array before:\n");
-    print_array(host_array, true, N, N, N, N);
+//    printf("host_array before:\n");
+//    print_array(host_array, true, N, N);
 
     // Allocate 2D 'old' array on device
     cudaMalloc((void **) &device_old, N * N * sizeof(char));
@@ -368,8 +366,8 @@ int main() {
 
         cudaMemset(device_old, '0', N * N * sizeof(char));
 
-        printf("host_array on step %d:\n", i);
-        print_array(host_array, true, N, N, N, N);
+//        printf("host_array on step %d:\n", i);
+//        print_array(host_array, true, N, N);
 
         cudaDeviceSynchronize();
 
