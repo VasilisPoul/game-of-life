@@ -1,0 +1,21 @@
+==57476== NVPROF is profiling process 57476, command: ./game_of_life
+==57476== Profiling application: ./game_of_life
+==57476== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   73.78%  27.879ms      1000  27.878us  26.014us  29.149us  kernel(char const *, char*)
+                   22.40%  8.4650ms      1000  8.4650us  8.3830us  17.823us  [CUDA memcpy DtoH]
+                    3.79%  1.4336ms      1001  1.4320us  1.3430us  3.1350us  [CUDA memset]
+                    0.03%  10.719us         1  10.719us  10.719us  10.719us  [CUDA memcpy HtoD]
+      API calls:   74.05%  197.61ms         2  98.807ms  5.1820us  197.61ms  cudaMalloc
+                   19.14%  51.079ms      1001  51.027us  39.198us  68.016us  cudaMemcpy
+                    2.33%  6.2246ms      1001  6.2180us  5.8480us  40.888us  cudaMemset
+                    1.95%  5.2057ms      1000  5.2050us  4.8390us  19.282us  cudaLaunchKernel
+                    1.87%  4.9845ms      1000  4.9840us  3.1920us  21.641us  cudaDeviceSynchronize
+                    0.32%  843.72us         2  421.86us  419.48us  424.24us  cuDeviceTotalMem
+                    0.26%  699.11us       194  3.6030us     314ns  144.05us  cuDeviceGetAttribute
+                    0.04%  117.12us         2  58.557us  11.895us  105.22us  cudaFree
+                    0.02%  64.997us         2  32.498us  29.150us  35.847us  cuDeviceGetName
+                    0.01%  19.854us         2  9.9270us  2.6230us  17.231us  cuDeviceGetPCIBusId
+                    0.00%  2.3800us         3     793ns     381ns  1.5250us  cuDeviceGetCount
+                    0.00%  1.9050us         4     476ns     340ns     835ns  cuDeviceGet
+                    0.00%  1.0610us         2     530ns     458ns     603ns  cuDeviceGetUuid

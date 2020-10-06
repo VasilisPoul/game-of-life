@@ -13,9 +13,9 @@
 /*RESET COLOR*/
 #define RESET  "\x1B[0m"
 
-#define N 7680
-#define M 4
-#define FILE_NAME "/home/msi/projects/CLionProjects/game-of-life/cuda/test-files/7680x7680.txt"
+#define N 5120 
+#define M 64 
+#define FILE_NAME "test-files/5120x5120.txt" 
 #define STEPS 1000
 
 char **allocate2DArray(int rows, int columns) {
@@ -53,7 +53,7 @@ __global__ void kernel(const char *old, char *current) {
     int sum = 0;
     unsigned int local_row = threadIdx.x;
     unsigned int local_col = threadIdx.y;
-    unsigned int local_thread_id = local_col + local_row * M;
+    // unsigned int local_thread_id = local_col + local_row * M;
 
     unsigned int ix = blockIdx.x * (blockDim.x) + threadIdx.x;
     unsigned int iy = blockIdx.y * (blockDim.y) + threadIdx.y;
