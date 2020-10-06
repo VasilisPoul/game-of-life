@@ -17,11 +17,7 @@ outputFolder=generations/row/
 
 rows=320
 cols=320
-for i in {1..4}; do
-
-  #config dimensions
-  rows=$(python -c "print("$rows" * "$i")")
-  cols=$(python -c "print("$cols" * "$i")")
+for i in {1..10}; do
 
   echo "Generating input file."
   python3 scripts/block.py $rows $inputFilePath
@@ -57,18 +53,22 @@ for i in {1..4}; do
 
     echo "Run with "$np" processes, nodes: "$select", cpus: "$ncpus", processes per node: "$mpiprocs
 
-    ID=$(qsub -l select=$select:ncpus=$ncpus:mpiprocs=$mpiprocs -N golJob_$j"_"$rows -v inputFilePath=$inputFilePath,outputFolder=$outputFolder,proc=$np,rows=$rows,cols=$cols mpiPBSscript.sh | sed -e s/"\..*"//)
+    ID=$(qsub -l select=$select:ncpus=$ncpus:mpiprocs=$mpiprocs -N OKSW_RE_$j"_"$rows -v inputFilePath=$inputFilePath,outputFolder=$outputFolder,proc=$np,rows=$rows,cols=$cols mpiPBSscript.sh | sed -e s/"\..*"//)
     
-    i=1
+    k=1
     sp="/-\|"
     echo -n ' '
     echo "Waiting... Processes: "$j" ... Dimensions: "$rows" x "$cols
     while [[ ! -z $(qstat | grep argo082) ]]; do
-      printf "\b${sp:i++%${#sp}:1}"   
+      printf "\b${sp:k++%${#sp}:1}"   
       sleep 0.3
     done
-    (grep "Steps" < "golJob_"$j"_"$rows".o"$ID ) | sed -e "s/Steps: [0-9]*, Max time: /"$j": /" >>$TF
+    (grep "Steps" < "OKSW_RE_"$j"_"$rows".o"$ID ) | sed -e "s/Steps: [0-9]*, Max time: /"$j": /" >>$TF
   done
+
+  #config dimensions
+  rows=$(python -c "print("$rows" * 2)")
+  cols=$(python -c "print("$cols" * 2)")
 
 done
 
