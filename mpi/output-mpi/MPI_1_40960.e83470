@@ -1,0 +1,25 @@
+[argo-c3:29353] pmix_mca_base_component_repository_open: unable to open mca_pnet_opa: libpsm2.so.2: cannot open shared object file: No such file or directory (ignored)
+[argo-c3:29353] mca_base_component_repository_open: unable to open mca_oob_ud: libosmcomp.so.3: cannot open shared object file: No such file or directory (ignored)
+[argo-c3:29358] pmix_mca_base_component_repository_open: unable to open mca_pnet_opa: libpsm2.so.2: cannot open shared object file: No such file or directory (ignored)
+[argo-c3:29358] mca_base_component_repository_open: unable to open mca_oob_ud: libosmcomp.so.3: cannot open shared object file: No such file or directory (ignored)
+[argo-c3:29358] mca_base_component_repository_open: unable to open mca_btl_openib: librdmacm.so.1: cannot open shared object file: No such file or directory (ignored)
+[argo-c3:29358] mca_base_component_repository_open: unable to open mca_mtl_psm: libpsm_infinipath.so.1: cannot open shared object file: No such file or directory (ignored)
+[argo-c3:29358] mca_base_component_repository_open: unable to open mca_mtl_psm2: libpsm2.so.2: cannot open shared object file: No such file or directory (ignored)
+[argo-c3:29358] *** Process received signal ***
+[argo-c3:29358] Signal: Segmentation fault (11)
+[argo-c3:29358] Signal code: Address not mapped (1)
+[argo-c3:29358] Failing at address: 0x8
+[argo-c3:29358] [ 0] /lib64/libpthread.so.0(+0xf5d0)[0x7f17e36615d0]
+[argo-c3:29358] [ 1] /lib64/libc.so.6(+0x8ef94)[0x7f17e3313f94]
+[argo-c3:29358] [ 2] game_of_life[0x402020]
+[argo-c3:29358] [ 3] game_of_life[0x4015c6]
+[argo-c3:29358] [ 4] /lib64/libc.so.6(__libc_start_main+0xf5)[0x7f17e32a73d5]
+[argo-c3:29358] [ 5] game_of_life[0x401df7]
+[argo-c3:29358] *** End of error message ***
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun noticed that process rank 0 with PID 0 on node argo-c3 exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------

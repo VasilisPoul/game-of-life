@@ -1,0 +1,56 @@
+mpiP: 
+mpiP: mpiP: mpiP V3.4.1 (Build Oct 27 2018/17:18:21)
+mpiP: Direct questions and errors to mpip-help@lists.sourceforge.net
+mpiP: 
+rank: 1, worker: 0, threads: 2
+rank: 2, worker: 0, threads: 2
+rank: 3, worker: 0, threads: 2
+rank: 4, worker: 0, threads: 2
+rank: 6, worker: 0, threads: 2
+rank: 6, worker: 1, threads: 2
+rank: 2, worker: 1, threads: 2
+rank: 5, worker: 1, threads: 2
+rank: 7, worker: 1, threads: 2
+rank: 1, worker: 1, threads: 2
+rank: 3, worker: 1, threads: 2
+rank: 4, worker: 1, threads: 2
+rank: 7, worker: 0, threads: 2
+rank: 12, worker: 0, threads: 2
+rank: 9, worker: 0, threads: 2
+rank: 11, worker: 0, threads: 2
+rank: 13, worker: 0, threads: 2
+rank: 14, worker: 0, threads: 2
+rank: 15, worker: 0, threads: 2
+rank: 15, worker: 1, threads: 2
+rank: 12, worker: 1, threads: 2
+rank: 9, worker: 1, threads: 2
+rank: 11, worker: 1, threads: 2
+rank: 14, worker: 1, threads: 2
+rank: 10, worker: 0, threads: 2
+rank: 10, worker: 1, threads: 2
+rank: 8, worker: 0, threads: 2
+rank: 8, worker: 1, threads: 2
+rank: 0, worker: 0, threads: 2
+rank: 0, worker: 1, threads: 2
+rank: 5, worker: 0, threads: 2
+rank: 13, worker: 1, threads: 2
+Worker: 1 - Duration: 11.926522739
+Worker: 5 - Duration: 11.926512418
+Worker: 13 - Duration: 11.926414068
+Worker: 11 - Duration: 11.926426315
+Worker: 15 - Duration: 11.927838724
+Worker: 10 - Duration: 11.928005882
+Worker: 7 - Duration: 11.928255812
+Worker: 4 - Duration: 11.928221859
+Worker: 6 - Duration: 11.929328974
+Worker: 3 - Duration: 11.929364155
+Worker: 2 - Duration: 11.926541746
+Worker: 9 - Duration: 11.929205822
+Worker: 12 - Duration: 11.929218183
+Worker: 0 - Duration: 11.926534124
+Worker: 14 - Duration: 11.929238849
+Worker: 8 - Duration: 11.928233299
+Steps: 1000, Max time: 11.929364
+mpiP: 
+mpiP: Storing mpiP output in [./game_of_life.16.20428.1.mpiP].
+mpiP: 

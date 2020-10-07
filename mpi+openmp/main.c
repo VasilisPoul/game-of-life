@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
     start_w_time = MPI_Wtime();
     MPI_Pcontrol(1);
 
-#pragma omp parallel num_threads(1) \
+#pragma omp parallel \
 private(thread_id, temp, i, ss, stepLocalThreadChanges, buffer) \
 shared(ompi_mpi_comm_world, ompi_mpi_info_null, ompi_mpi_comm_self, ompi_mpi_char, ompi_mpi_int, ompi_mpi_op_sum, \
 threads, old, current, grid, stepLocalChanges, stepGlobalChanges, recv_a_status, recv_b_status, recv_a_request, \
@@ -203,6 +203,7 @@ default(none)
 
 #pragma omp barrier
 
+/*
 #pragma omp master
             {
                 // Create & write generation file
@@ -219,6 +220,7 @@ default(none)
                 // Close generation file
                 MPI_File_close(&outputFile);
             }
+*/
 
 #pragma omp single
             {

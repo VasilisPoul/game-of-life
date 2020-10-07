@@ -1,0 +1,25 @@
+
+Processes 1 Threads 1: 1.0
+Processes 4 Threads 1: 1.95942591604
+Processes 16 Threads 1: 0.839211353602
+Processes 64 Threads 1: 0.520083548574
+
+Processes 1 Threads 2: 1.0
+Processes 4 Threads 2: 3.52153014369
+Processes 16 Threads 2: 0.112186401328
+Processes 64 Threads 2: 0.0501851028481
+
+Processes 1 Threads 4: 1.0
+Processes 4 Threads 4: 0.273244642476
+Processes 16 Threads 4: 0.051361867878
+Processes 64 Threads 4: 0.0209674822469
+
+Processes 1 Threads 8: 1.0
+Processes 4 Threads 8: 2.379510994
+Processes 16 Threads 8: 0.620709757983
+Processes 64 Threads 8: 0.135759525556
+
+Processes 1 Threads 16: 1.0
+Processes 4 Threads 16: 1.31184131913
+Processes 16 Threads 16: 0.39128125002
+Processes 64 Threads 16: 0.135365987655

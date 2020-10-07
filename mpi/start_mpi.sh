@@ -7,25 +7,22 @@ module load mpiP
 mpicc -O3 -g game_of_life.c main.c mpi.c -L$MPIP_DIR/lib -lmpiP -lm -Wall -o game_of_life
 
 #rm
-rm *.mpiP golJob*.* *.x times.* speedup.* efficiency.*
+rm *.mpiP MPI_*.* *.x times.* speedup.* efficiency.*
 rm -f generations/row/*
 rm -f generations/boxes/*
 
 #
-inputFilePath=generations/row/input.txt
+
 outputFolder=generations/row/
 
 rows=320
 cols=320
-for i in {1..10}; do
-
-  echo "Generating input file."
-  python3 scripts/block.py $rows $inputFilePath
-
+for i in {1..5}; do
+  inputFilePath="../test-files/"$rows"x"$cols".txt"
+  
   TF="times."$rows"x"$cols".txt"
 
   processes=(1 4 16 64)
-
 
   for j in ${processes[@]}; do 
 
@@ -53,17 +50,17 @@ for i in {1..10}; do
 
     echo "Run with "$np" processes, nodes: "$select", cpus: "$ncpus", processes per node: "$mpiprocs
 
-    ID=$(qsub -l select=$select:ncpus=$ncpus:mpiprocs=$mpiprocs -N OKSW_RE_$j"_"$rows -v inputFilePath=$inputFilePath,outputFolder=$outputFolder,proc=$np,rows=$rows,cols=$cols mpiPBSscript.sh | sed -e s/"\..*"//)
+    ID=$(qsub -l select=$select:ncpus=$ncpus:mpiprocs=$mpiprocs -N MPI_$j"_"$rows -v inputFilePath=$inputFilePath,outputFolder=$outputFolder,proc=$np,rows=$rows,cols=$cols mpiPBSscript.sh | sed -e s/"\..*"//)
     
     k=1
     sp="/-\|"
     echo -n ' '
     echo "Waiting... Processes: "$j" ... Dimensions: "$rows" x "$cols
-    while [[ ! -z $(qstat | grep argo082) ]]; do
+    while [[ ! -z $(qstat | grep argo021) ]]; do
       printf "\b${sp:k++%${#sp}:1}"   
       sleep 0.3
     done
-    (grep "Steps" < "OKSW_RE_"$j"_"$rows".o"$ID ) | sed -e "s/Steps: [0-9]*, Max time: /"$j": /" >>$TF
+    (grep "Steps" < "MPI_"$j"_"$rows".o"$ID ) | sed -e "s/Steps: [0-9]*, Max time: /"$j": /" >>$TF
   done
 
   #config dimensions

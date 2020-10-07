@@ -1,0 +1,24 @@
+mpiP: 
+mpiP: mpiP: mpiP V3.4.1 (Build Oct 27 2018/17:18:21)
+mpiP: Direct questions and errors to mpip-help@lists.sourceforge.net
+mpiP: 
+Worker: 4 - Duration: 217.632914537
+Worker: 5 - Duration: 217.632944636
+Worker: 6 - Duration: 217.632732049
+Worker: 7 - Duration: 217.632931029
+Worker: 1 - Duration: 217.665087788
+Worker: 2 - Duration: 217.665019556
+Worker: 3 - Duration: 217.665097398
+Worker: 9 - Duration: 217.839254197
+Worker: 11 - Duration: 217.839374333
+Worker: 10 - Duration: 217.839049750
+Worker: 0 - Duration: 217.665119339
+Steps: 1000, Max time: 217.871047
+Worker: 13 - Duration: 217.870958287
+Worker: 15 - Duration: 217.871026992
+Worker: 14 - Duration: 217.870430484
+Worker: 8 - Duration: 217.839494659
+Worker: 12 - Duration: 217.871047498
+mpiP: 
+mpiP: Storing mpiP output in [./game_of_life.16.29147.1.mpiP].
+mpiP: 

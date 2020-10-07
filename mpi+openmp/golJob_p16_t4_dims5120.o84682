@@ -1,0 +1,88 @@
+mpiP: 
+mpiP: mpiP: mpiP V3.4.1 (Build Oct 27 2018/17:18:21)
+mpiP: Direct questions and errors to mpip-help@lists.sourceforge.net
+mpiP: 
+rank: 5, worker: 0, threads: 4
+rank: 10, worker: 3, threads: 4
+rank: 10, worker: 0, threads: 4
+rank: 10, worker: 2, threads: 4
+rank: 8, worker: 0, threads: 4
+rank: 10, worker: 1, threads: 4
+rank: 8, worker: 3, threads: 4
+rank: 4, worker: 3, threads: 4
+rank: 5, worker: 2, threads: 4
+rank: 0, worker: 1, threads: 4
+rank: 3, worker: 0, threads: 4
+rank: 0, worker: 0, threads: 4
+rank: 0, worker: 2, threads: 4
+rank: 3, worker: 2, threads: 4
+rank: 9, worker: 1, threads: 4
+rank: 9, worker: 0, threads: 4
+rank: 9, worker: 3, threads: 4
+rank: 3, worker: 3, threads: 4
+rank: 0, worker: 3, threads: 4
+rank: 6, worker: 0, threads: 4
+rank: 6, worker: 1, threads: 4
+rank: 6, worker: 3, threads: 4
+rank: 12, worker: 0, threads: 4
+rank: 12, worker: 3, threads: 4
+rank: 5, worker: 3, threads: 4
+rank: 12, worker: 1, threads: 4
+rank: 4, worker: 0, threads: 4
+rank: 9, worker: 2, threads: 4
+rank: 11, worker: 3, threads: 4
+rank: 12, worker: 2, threads: 4
+rank: 8, worker: 1, threads: 4
+rank: 11, worker: 2, threads: 4
+rank: 11, worker: 0, threads: 4
+rank: 11, worker: 1, threads: 4
+rank: 13, worker: 0, threads: 4
+rank: 13, worker: 3, threads: 4
+rank: 13, worker: 2, threads: 4
+rank: 1, worker: 0, threads: 4
+rank: 6, worker: 2, threads: 4
+rank: 5, worker: 1, threads: 4
+rank: 7, worker: 0, threads: 4
+rank: 7, worker: 2, threads: 4
+rank: 7, worker: 3, threads: 4
+rank: 2, worker: 3, threads: 4
+rank: 3, worker: 1, threads: 4
+rank: 15, worker: 0, threads: 4
+rank: 15, worker: 2, threads: 4
+rank: 4, worker: 2, threads: 4
+rank: 2, worker: 1, threads: 4
+rank: 2, worker: 0, threads: 4
+rank: 2, worker: 2, threads: 4
+rank: 14, worker: 2, threads: 4
+rank: 8, worker: 2, threads: 4
+rank: 13, worker: 1, threads: 4
+rank: 1, worker: 3, threads: 4
+rank: 1, worker: 2, threads: 4
+rank: 15, worker: 1, threads: 4
+rank: 15, worker: 3, threads: 4
+rank: 14, worker: 1, threads: 4
+rank: 1, worker: 1, threads: 4
+rank: 14, worker: 0, threads: 4
+rank: 7, worker: 1, threads: 4
+rank: 4, worker: 1, threads: 4
+rank: 14, worker: 3, threads: 4
+Worker: 3 - Duration: 61.427665528
+Worker: 1 - Duration: 61.427699232
+Worker: 2 - Duration: 61.423479223
+Worker: 7 - Duration: 61.427666747
+Worker: 6 - Duration: 61.427699310
+Worker: 5 - Duration: 61.427662671
+Worker: 4 - Duration: 61.427703482
+Worker: 0 - Duration: 61.427727186
+Steps: 1000, Max time: 61.427850
+Worker: 10 - Duration: 61.427834145
+Worker: 12 - Duration: 61.427848459
+Worker: 9 - Duration: 61.427801552
+Worker: 15 - Duration: 61.427837186
+Worker: 11 - Duration: 61.427789235
+Worker: 13 - Duration: 61.427790499
+Worker: 8 - Duration: 61.427849960
+Worker: 14 - Duration: 61.427850149
+mpiP: 
+mpiP: Storing mpiP output in [./game_of_life.16.23531.1.mpiP].
+mpiP: 

@@ -1,0 +1,20 @@
+mpiP: 
+mpiP: mpiP: mpiP V3.4.1 (Build Oct 27 2018/17:18:21)
+mpiP: Direct questions and errors to mpip-help@lists.sourceforge.net
+mpiP: 
+rank: 0, worker: 0, threads: 2
+rank: 1, worker: 0, threads: 2
+rank: 2, worker: 0, threads: 2
+rank: 2, worker: 1, threads: 2
+rank: 3, worker: 0, threads: 2
+rank: 1, worker: 1, threads: 2
+rank: 3, worker: 1, threads: 2
+rank: 0, worker: 1, threads: 2
+Worker: 2 - Duration: 3.439804774
+Worker: 0 - Duration: 3.439797193
+Worker: 3 - Duration: 3.439813555
+Worker: 1 - Duration: 3.439813436
+Steps: 1000, Max time: 3.439814
+mpiP: 
+mpiP: Storing mpiP output in [./game_of_life.4.21137.1.mpiP].
+mpiP: 

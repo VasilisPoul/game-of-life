@@ -192,9 +192,6 @@ int main(int argc, char **argv) {
         // Summarize all local changes
         if (s % 10 == 0) {
             MPI_Allreduce(&grid.stepLocalChanges, &grid.stepGlobalChanges, 1, MPI_INT, MPI_SUM, grid.gridComm);
-            if (grid.stepGlobalChanges == 0) {
-                break;
-            }
         }
 
         // Wait send requests
@@ -221,7 +218,7 @@ int main(int argc, char **argv) {
         if (inputFileNotExists) {
             free2DArray(block, grid.blockDims[0]);
         }
-        system("/home/msi/projects/CLionProjects/game-of-life/mpi+openmp/scripts/clion-boxes.sh");
+        //system("/home/msi/projects/CLionProjects/game-of-life/mpi+openmp/scripts/clion-boxes.sh");
     }
 
     free2DArray(old, grid.localBlockDims[0] + 2);

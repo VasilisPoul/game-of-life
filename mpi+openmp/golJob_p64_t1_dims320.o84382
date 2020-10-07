@@ -1,0 +1,136 @@
+mpiP: 
+mpiP: mpiP: mpiP V3.4.1 (Build Oct 27 2018/17:18:21)
+mpiP: Direct questions and errors to mpip-help@lists.sourceforge.net
+mpiP: 
+rank: 1, worker: 0, threads: 1
+rank: 3, worker: 0, threads: 1
+rank: 5, worker: 0, threads: 1
+rank: 7, worker: 0, threads: 1
+rank: 0, worker: 0, threads: 1
+rank: 4, worker: 0, threads: 1
+rank: 6, worker: 0, threads: 1
+rank: 41, worker: 0, threads: 1
+rank: 2, worker: 0, threads: 1
+rank: 43, worker: 0, threads: 1
+rank: 48, worker: 0, threads: 1
+rank: 56, worker: 0, threads: 1
+rank: 17, worker: 0, threads: 1
+rank: 9, worker: 0, threads: 1
+rank: 35, worker: 0, threads: 1
+rank: 45, worker: 0, threads: 1
+rank: 57, worker: 0, threads: 1
+rank: 19, worker: 0, threads: 1
+rank: 11, worker: 0, threads: 1
+rank: 25, worker: 0, threads: 1
+rank: 47, worker: 0, threads: 1
+rank: 49, worker: 0, threads: 1
+rank: 61, worker: 0, threads: 1
+rank: 36, worker: 0, threads: 1
+rank: 21, worker: 0, threads: 1
+rank: 13, worker: 0, threads: 1
+rank: 29, worker: 0, threads: 1
+rank: 37, worker: 0, threads: 1
+rank: 51, worker: 0, threads: 1
+rank: 63, worker: 0, threads: 1
+rank: 23, worker: 0, threads: 1
+rank: 15, worker: 0, threads: 1
+rank: 31, worker: 0, threads: 1
+rank: 52, worker: 0, threads: 1
+rank: 20, worker: 0, threads: 1
+rank: 8, worker: 0, threads: 1
+rank: 24, worker: 0, threads: 1
+rank: 39, worker: 0, threads: 1
+rank: 53, worker: 0, threads: 1
+rank: 12, worker: 0, threads: 1
+rank: 28, worker: 0, threads: 1
+rank: 46, worker: 0, threads: 1
+rank: 55, worker: 0, threads: 1
+rank: 18, worker: 0, threads: 1
+rank: 42, worker: 0, threads: 1
+rank: 62, worker: 0, threads: 1
+rank: 26, worker: 0, threads: 1
+rank: 34, worker: 0, threads: 1
+rank: 58, worker: 0, threads: 1
+rank: 14, worker: 0, threads: 1
+rank: 40, worker: 0, threads: 1
+rank: 54, worker: 0, threads: 1
+rank: 59, worker: 0, threads: 1
+rank: 22, worker: 0, threads: 1
+rank: 30, worker: 0, threads: 1
+rank: 38, worker: 0, threads: 1
+rank: 16, worker: 0, threads: 1
+rank: 10, worker: 0, threads: 1
+rank: 33, worker: 0, threads: 1
+rank: 44, worker: 0, threads: 1
+rank: 50, worker: 0, threads: 1
+rank: 60, worker: 0, threads: 1
+rank: 27, worker: 0, threads: 1
+rank: 32, worker: 0, threads: 1
+Worker: 7 - Duration: 2.741075185
+Worker: 6 - Duration: 2.740596579
+Worker: 1 - Duration: 2.741076401
+Worker: 3 - Duration: 2.741108805
+Worker: 4 - Duration: 2.741063681
+Worker: 5 - Duration: 2.741098359
+Worker: 2 - Duration: 2.741040320
+Worker: 54 - Duration: 2.740422738
+Worker: 31 - Duration: 2.741073994
+Worker: 46 - Duration: 2.740733359
+Worker: 17 - Duration: 2.740994331
+Worker: 33 - Duration: 2.741069181
+Worker: 49 - Duration: 2.740888415
+Worker: 59 - Duration: 2.741079800
+Worker: 19 - Duration: 2.740999204
+Worker: 15 - Duration: 2.741189242
+Worker: 30 - Duration: 2.740731065
+Worker: 0 - Duration: 2.740988810
+Steps: 1000, Max time: 2.741246
+Worker: 39 - Duration: 2.741052667
+Worker: 47 - Duration: 2.741045760
+Worker: 51 - Duration: 2.740929048
+Worker: 23 - Duration: 2.741045984
+Worker: 12 - Duration: 2.741182788
+Worker: 28 - Duration: 2.741029325
+Worker: 38 - Duration: 2.740577042
+Worker: 43 - Duration: 2.741061891
+Worker: 55 - Duration: 2.740878388
+Worker: 18 - Duration: 2.740736517
+Worker: 9 - Duration: 2.741246350
+Worker: 25 - Duration: 2.741119903
+Worker: 35 - Duration: 2.741093821
+Worker: 42 - Duration: 2.740746452
+Worker: 52 - Duration: 2.740826437
+Worker: 62 - Duration: 2.740745578
+Worker: 21 - Duration: 2.741041433
+Worker: 8 - Duration: 2.741127962
+Worker: 26 - Duration: 2.740747282
+Worker: 37 - Duration: 2.741042263
+Worker: 45 - Duration: 2.741105639
+Worker: 53 - Duration: 2.740934877
+Worker: 58 - Duration: 2.740750451
+Worker: 20 - Duration: 2.740942510
+Worker: 11 - Duration: 2.741188803
+Worker: 24 - Duration: 2.741086627
+Worker: 34 - Duration: 2.740767387
+Worker: 44 - Duration: 2.741066444
+Worker: 50 - Duration: 2.740128630
+Worker: 63 - Duration: 2.741098354
+Worker: 16 - Duration: 2.740869836
+Worker: 14 - Duration: 2.740893660
+Worker: 29 - Duration: 2.741134193
+Worker: 36 - Duration: 2.741052324
+Worker: 41 - Duration: 2.741118317
+Worker: 48 - Duration: 2.740851932
+Worker: 57 - Duration: 2.741085614
+Worker: 22 - Duration: 2.740553853
+Worker: 13 - Duration: 2.741202154
+Worker: 27 - Duration: 2.741094267
+Worker: 32 - Duration: 2.740985031
+Worker: 40 - Duration: 2.740865599
+Worker: 61 - Duration: 2.741154692
+Worker: 10 - Duration: 2.740850946
+Worker: 56 - Duration: 2.741090631
+Worker: 60 - Duration: 2.740820684
+mpiP: 
+mpiP: Storing mpiP output in [./game_of_life.64.18985.1.mpiP].
+mpiP: 

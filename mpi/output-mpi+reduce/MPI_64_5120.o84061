@@ -1,0 +1,72 @@
+mpiP: 
+mpiP: mpiP: mpiP V3.4.1 (Build Oct 27 2018/17:18:21)
+mpiP: Direct questions and errors to mpip-help@lists.sourceforge.net
+mpiP: 
+Worker: 1 - Duration: 3.593412533
+Worker: 2 - Duration: 3.593360500
+Worker: 3 - Duration: 3.593469229
+Worker: 4 - Duration: 3.593357357
+Worker: 5 - Duration: 3.593427156
+Worker: 6 - Duration: 3.593360049
+Worker: 7 - Duration: 3.593432829
+Worker: 49 - Duration: 3.593308837
+Worker: 9 - Duration: 3.593499883
+Worker: 33 - Duration: 3.593436063
+Worker: 17 - Duration: 3.593353270
+Worker: 41 - Duration: 3.593447996
+Worker: 25 - Duration: 3.593483486
+Worker: 0 - Duration: 3.593350403
+Steps: 1000, Max time: 3.593530
+Worker: 50 - Duration: 3.593212107
+Worker: 11 - Duration: 3.593530416
+Worker: 34 - Duration: 3.593351085
+Worker: 18 - Duration: 3.593285348
+Worker: 45 - Duration: 3.593486581
+Worker: 26 - Duration: 3.593492251
+Worker: 51 - Duration: 3.593329773
+Worker: 57 - Duration: 3.593482984
+Worker: 12 - Duration: 3.593427212
+Worker: 35 - Duration: 3.593468912
+Worker: 19 - Duration: 3.593343860
+Worker: 47 - Duration: 3.593495955
+Worker: 27 - Duration: 3.593517632
+Worker: 52 - Duration: 3.593250902
+Worker: 59 - Duration: 3.593506949
+Worker: 13 - Duration: 3.593490331
+Worker: 36 - Duration: 3.593385603
+Worker: 20 - Duration: 3.593254764
+Worker: 40 - Duration: 3.593384760
+Worker: 28 - Duration: 3.593393314
+Worker: 53 - Duration: 3.593374481
+Worker: 61 - Duration: 3.593507644
+Worker: 14 - Duration: 3.593438349
+Worker: 37 - Duration: 3.593437904
+Worker: 21 - Duration: 3.593378388
+Worker: 42 - Duration: 3.593493183
+Worker: 29 - Duration: 3.593523858
+Worker: 55 - Duration: 3.593365726
+Worker: 62 - Duration: 3.593427455
+Worker: 15 - Duration: 3.593493056
+Worker: 38 - Duration: 3.593332563
+Worker: 22 - Duration: 3.593301349
+Worker: 43 - Duration: 3.593478265
+Worker: 30 - Duration: 3.593428774
+Worker: 54 - Duration: 3.593154580
+Worker: 63 - Duration: 3.593517217
+Worker: 8 - Duration: 3.593427137
+Worker: 39 - Duration: 3.593416570
+Worker: 23 - Duration: 3.593360185
+Worker: 44 - Duration: 3.593387828
+Worker: 31 - Duration: 3.593509240
+Worker: 48 - Duration: 3.593207136
+Worker: 56 - Duration: 3.593409653
+Worker: 10 - Duration: 3.593499363
+Worker: 32 - Duration: 3.593395228
+Worker: 16 - Duration: 3.593290181
+Worker: 46 - Duration: 3.593401178
+Worker: 24 - Duration: 3.593412918
+Worker: 58 - Duration: 3.593479541
+Worker: 60 - Duration: 3.593405758
+mpiP: 
+mpiP: Storing mpiP output in [./game_of_life.64.9745.1.mpiP].
+mpiP: 

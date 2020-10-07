@@ -1,0 +1,152 @@
+mpiP: 
+mpiP: mpiP: mpiP V3.4.1 (Build Oct 27 2018/17:18:21)
+mpiP: Direct questions and errors to mpip-help@lists.sourceforge.net
+mpiP: 
+rank: 4, worker: 0, threads: 8
+rank: 6, worker: 0, threads: 8
+rank: 4, worker: 6, threads: 8
+rank: 6, worker: 6, threads: 8
+rank: 5, worker: 1, threads: 8
+rank: 5, worker: 0, threads: 8
+rank: 6, worker: 7, threads: 8
+rank: 5, worker: 2, threads: 8
+rank: 5, worker: 5, threads: 8
+rank: 12, worker: 0, threads: 8
+rank: 12, worker: 3, threads: 8
+rank: 14, worker: 0, threads: 8
+rank: 10, worker: 0, threads: 8
+rank: 14, worker: 6, threads: 8
+rank: 10, worker: 4, threads: 8
+rank: 12, worker: 7, threads: 8
+rank: 13, worker: 0, threads: 8
+rank: 1, worker: 2, threads: 8
+rank: 1, worker: 0, threads: 8
+rank: 1, worker: 7, threads: 8
+rank: 6, worker: 5, threads: 8
+rank: 4, worker: 5, threads: 8
+rank: 7, worker: 0, threads: 8
+rank: 7, worker: 5, threads: 8
+rank: 7, worker: 1, threads: 8
+rank: 1, worker: 1, threads: 8
+rank: 15, worker: 0, threads: 8
+rank: 15, worker: 6, threads: 8
+rank: 15, worker: 2, threads: 8
+rank: 11, worker: 0, threads: 8
+rank: 11, worker: 2, threads: 8
+rank: 10, worker: 5, threads: 8
+rank: 14, worker: 5, threads: 8
+rank: 10, worker: 6, threads: 8
+rank: 12, worker: 6, threads: 8
+rank: 0, worker: 2, threads: 8
+rank: 2, worker: 0, threads: 8
+rank: 15, worker: 7, threads: 8
+rank: 11, worker: 3, threads: 8
+rank: 13, worker: 1, threads: 8
+rank: 10, worker: 1, threads: 8
+rank: 13, worker: 3, threads: 8
+rank: 12, worker: 5, threads: 8
+rank: 15, worker: 1, threads: 8
+rank: 11, worker: 4, threads: 8
+rank: 1, worker: 5, threads: 8
+rank: 7, worker: 2, threads: 8
+rank: 4, worker: 4, threads: 8
+rank: 2, worker: 3, threads: 8
+rank: 0, worker: 0, threads: 8
+rank: 4, worker: 3, threads: 8
+rank: 0, worker: 6, threads: 8
+rank: 6, worker: 4, threads: 8
+rank: 1, worker: 6, threads: 8
+rank: 5, worker: 4, threads: 8
+rank: 10, worker: 7, threads: 8
+rank: 7, worker: 3, threads: 8
+rank: 7, worker: 7, threads: 8
+rank: 10, worker: 2, threads: 8
+rank: 15, worker: 3, threads: 8
+rank: 14, worker: 4, threads: 8
+rank: 12, worker: 2, threads: 8
+rank: 13, worker: 6, threads: 8
+rank: 15, worker: 4, threads: 8
+rank: 11, worker: 1, threads: 8
+rank: 13, worker: 4, threads: 8
+rank: 9, worker: 0, threads: 8
+rank: 9, worker: 2, threads: 8
+rank: 9, worker: 3, threads: 8
+rank: 10, worker: 3, threads: 8
+rank: 9, worker: 5, threads: 8
+rank: 12, worker: 4, threads: 8
+rank: 4, worker: 2, threads: 8
+rank: 1, worker: 3, threads: 8
+rank: 2, worker: 5, threads: 8
+rank: 6, worker: 3, threads: 8
+rank: 7, worker: 4, threads: 8
+rank: 7, worker: 6, threads: 8
+rank: 9, worker: 1, threads: 8
+rank: 14, worker: 2, threads: 8
+rank: 9, worker: 4, threads: 8
+rank: 14, worker: 7, threads: 8
+rank: 8, worker: 0, threads: 8
+rank: 8, worker: 7, threads: 8
+rank: 15, worker: 5, threads: 8
+rank: 6, worker: 2, threads: 8
+rank: 4, worker: 1, threads: 8
+rank: 1, worker: 4, threads: 8
+rank: 2, worker: 6, threads: 8
+rank: 0, worker: 3, threads: 8
+rank: 2, worker: 4, threads: 8
+rank: 8, worker: 5, threads: 8
+rank: 9, worker: 6, threads: 8
+rank: 4, worker: 7, threads: 8
+rank: 0, worker: 4, threads: 8
+rank: 3, worker: 0, threads: 8
+rank: 3, worker: 2, threads: 8
+rank: 3, worker: 7, threads: 8
+rank: 14, worker: 1, threads: 8
+rank: 0, worker: 5, threads: 8
+rank: 2, worker: 2, threads: 8
+rank: 3, worker: 5, threads: 8
+rank: 8, worker: 6, threads: 8
+rank: 2, worker: 1, threads: 8
+rank: 0, worker: 1, threads: 8
+rank: 14, worker: 3, threads: 8
+rank: 12, worker: 1, threads: 8
+rank: 8, worker: 1, threads: 8
+rank: 11, worker: 5, threads: 8
+rank: 5, worker: 6, threads: 8
+rank: 3, worker: 3, threads: 8
+rank: 2, worker: 7, threads: 8
+rank: 9, worker: 7, threads: 8
+rank: 13, worker: 2, threads: 8
+rank: 11, worker: 6, threads: 8
+rank: 3, worker: 1, threads: 8
+rank: 3, worker: 6, threads: 8
+rank: 13, worker: 7, threads: 8
+rank: 13, worker: 5, threads: 8
+rank: 3, worker: 4, threads: 8
+rank: 0, worker: 7, threads: 8
+rank: 5, worker: 3, threads: 8
+rank: 5, worker: 7, threads: 8
+rank: 6, worker: 1, threads: 8
+rank: 8, worker: 4, threads: 8
+rank: 11, worker: 7, threads: 8
+rank: 8, worker: 3, threads: 8
+rank: 8, worker: 2, threads: 8
+Worker: 7 - Duration: 10.118643768
+Worker: 5 - Duration: 10.118671189
+Worker: 2 - Duration: 10.118618256
+Worker: 1 - Duration: 10.118650137
+Worker: 4 - Duration: 10.118660126
+Worker: 3 - Duration: 10.118615973
+Worker: 6 - Duration: 10.118644042
+Worker: 0 - Duration: 10.118604764
+Steps: 1000, Max time: 10.118753
+Worker: 11 - Duration: 10.118721241
+Worker: 9 - Duration: 10.118730291
+Worker: 13 - Duration: 10.118722360
+Worker: 14 - Duration: 10.118716459
+Worker: 15 - Duration: 10.118731009
+Worker: 12 - Duration: 10.118710374
+Worker: 10 - Duration: 10.118752703
+Worker: 8 - Duration: 10.118711849
+mpiP: 
+mpiP: Storing mpiP output in [./game_of_life.16.24945.1.mpiP].
+mpiP: 

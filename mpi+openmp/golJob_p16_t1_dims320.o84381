@@ -1,0 +1,40 @@
+mpiP: 
+mpiP: mpiP: mpiP V3.4.1 (Build Oct 27 2018/17:18:21)
+mpiP: Direct questions and errors to mpip-help@lists.sourceforge.net
+mpiP: 
+rank: 0, worker: 0, threads: 1
+rank: 6, worker: 0, threads: 1
+rank: 7, worker: 0, threads: 1
+rank: 1, worker: 0, threads: 1
+rank: 2, worker: 0, threads: 1
+rank: 3, worker: 0, threads: 1
+rank: 5, worker: 0, threads: 1
+rank: 4, worker: 0, threads: 1
+rank: 8, worker: 0, threads: 1
+rank: 9, worker: 0, threads: 1
+rank: 10, worker: 0, threads: 1
+rank: 11, worker: 0, threads: 1
+rank: 12, worker: 0, threads: 1
+rank: 13, worker: 0, threads: 1
+rank: 14, worker: 0, threads: 1
+rank: 15, worker: 0, threads: 1
+Worker: 7 - Duration: 1.860563678
+Worker: 1 - Duration: 1.860534672
+Worker: 2 - Duration: 1.860567115
+Worker: 5 - Duration: 1.860528191
+Worker: 3 - Duration: 1.860557825
+Worker: 6 - Duration: 1.860563419
+Worker: 0 - Duration: 1.860519703
+Steps: 1000, Max time: 1.860617
+Worker: 4 - Duration: 1.860616861
+Worker: 8 - Duration: 1.860534409
+Worker: 9 - Duration: 1.860583620
+Worker: 10 - Duration: 1.860566924
+Worker: 14 - Duration: 1.860550855
+Worker: 11 - Duration: 1.860591181
+Worker: 12 - Duration: 1.860578525
+Worker: 13 - Duration: 1.860575120
+Worker: 15 - Duration: 1.860143292
+mpiP: 
+mpiP: Storing mpiP output in [./game_of_life.16.10668.1.mpiP].
+mpiP: 

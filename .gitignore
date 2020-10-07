@@ -167,3 +167,5 @@ main
 golJob.*
 *.x
 *.mpiP
+/test-files/10240x10240.txt
+/test-files/20480x20480.txt
