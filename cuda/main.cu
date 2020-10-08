@@ -15,7 +15,7 @@
 
 #define N 5120 
 #define M 64 
-#define FILE_NAME "test-files/5120x5120.txt" 
+#define FILE_NAME "../test-files/5120x5120.txt"
 #define STEPS 1000
 
 char **allocate2DArray(int rows, int columns) {
