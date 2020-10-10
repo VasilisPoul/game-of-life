@@ -22,8 +22,9 @@ int main(int argc, char **argv) {
 
     MPI_File inputFile, outputFile;
     GridInfo grid;
+    int provided = 0;
 
-    MPI_Init(&argc, &argv);
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
 
     while ((opt = getopt(argc, argv, "i:f:r:c:")) != -1) {
         switch (opt) {
@@ -150,8 +151,9 @@ default(none)
             }
 
             // Calculate internals
-#pragma omp for schedule(static, 1) collapse(2) reduction(+:stepLocalChanges)
+// #pragma omp for schedule(static, 1) collapse(2) reduction(+:stepLocalChanges)
             for (i = 2; i < grid.localBlockDims[0]; i++) {
+                #pragma omp for reduction(+:stepLocalChanges)
                 for (j = 2; j < grid.localBlockDims[1]; j++) {
                     calculate(old, current, i, j, &stepLocalThreadChanges);
                     stepLocalChanges += stepLocalThreadChanges;
@@ -169,29 +171,28 @@ default(none)
             }
 
             // Calculate up row
-#pragma omp for schedule(static, 1) reduction(+:stepLocalChanges)
+#pragma omp for reduction(+:stepLocalChanges)
             for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
                 calculate(old, current, 1, i, &stepLocalThreadChanges);
                 stepLocalChanges += stepLocalThreadChanges;
             }
 
             // Calculate down row
-#pragma omp for schedule(static, 1) reduction(+:stepLocalChanges)
+#pragma omp for reduction(+:stepLocalChanges)
             for (i = 1; i < grid.localBlockDims[1] + 1; i++) {
                 calculate(old, current, grid.localBlockDims[0], i, &stepLocalThreadChanges);
                 stepLocalChanges += stepLocalThreadChanges;
             }
 
             // Calculate left Column
-#pragma omp for schedule(static, 1) reduction(+:stepLocalChanges)
+#pragma omp for reduction(+:stepLocalChanges)
             for (i = 2; i < grid.localBlockDims[0]; i++) {
                 calculate(old, current, i, 1, &stepLocalThreadChanges);
                 stepLocalChanges += stepLocalThreadChanges;
             }
 
-
             // Calculate right column
-#pragma omp for schedule(static, 1) reduction(+:stepLocalChanges)
+#pragma omp for reduction(+:stepLocalChanges)
             for (i = 2; i < grid.localBlockDims[0]; i++) {
                 calculate(old, current, i, grid.localBlockDims[1], &stepLocalThreadChanges);
                 stepLocalChanges += stepLocalThreadChanges;
