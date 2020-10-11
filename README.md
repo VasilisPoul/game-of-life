@@ -196,40 +196,104 @@ TODO: schedule
 #### Έλεγχος τερματισμού
 Για υπάρχει έλεγχος τερματισμού, χρησιμοποιούμε τη μεταβλητή  `stepLocaChanges`. Για να υπολογιστεί σωστά ο συνολικός αριθμός των τοπικών αλλαγών, κάνουμε`reduction(+:stepLocalChanges)` σε κάθε `#pragma omp for` . 
 
-### Μετρήσεις χρόνων εκτέλεσης 
+### Μετρήσεις χρόνων εκτέλεσης (collapse)
 
-
+Καταλήξαμε στους συνδυασμούς **2 Threads** / **16 Processes** και **4 Threads** / **16 Processes**, καθώς παρατηρήσαμε πως ήταν οι πιο αποδοτικοί σε όλα τα μεγέθη με την επιλογή **8 κόμβων** και **2 διεργασιών** / **κόμβο**. Αυτό οφείλεται στο γεγονός ότι με τους συγκεκριμένους συνδιασμούς, εξαλείφεται εντελώς το **scheduling** επειδή κάθε νήμα θα εκτελεστεί σε διαφορετικό **πυρήνα**.
   
-| |1 Process| 4 Processes| 16 Processes| 64 Processes|   
-|--|--|--|--|--|   
-| **320x320**   | 0.747    |  **0.216**  | 0.217      | 0.330     |  
-| **640x640**   | 3.364    |  0.774      | **0.333**  | 0.348     |  
-| **1280x1280** | 13.315   |  3.384      | **0.879**  | 0.443     |  
-| **2560x2560** | 53.737   |  13.470     | 3.502      | **0.977** |  
-| **5120x5120** | 214.299  |  54.121     | 13.764     | **3.594** |  
+| |2 Threads / 16 Process| 4 Threads / 16 Processes|   
+|--|--|--|
+| **320x320**   | 0.241    |  0.240  | 
+| **640x640**   | 0.410   |  0.363      |  
+| **1280x1280** | 1.060   |  0.669      |  
+| **2560x2560** | 3.591   |  2.000     |  
+| **5120x5120** | 13.730  |  7.464     |  
   
 ### Yπολογισμός speedup  
   
-| |1 Process| 4 Processes| 16 Processes| 64 Processes|   
-|--|--|--|--|--|   
-| **320x320**   | 1.0  | **1.729** | 0.859     | 0.283     |  
-| **640x640**   | 1.0  | 2.172     | **2.525** | 1.208     |  
-| **1280x1280** | 1.0  | 1.968     | **3.786** | 3.757     |  
-| **2560x2560** | 1.0  | 1.995     | 3.836     | **6.874** |  
-| **5120x5120** | 1.0  | 1.980     | 3.892     | **7.454** |  
+| |2 Threads / 16 Process| 4 Threads / 16 Processes|   
+|--|--|--|
+| **320x320**   | 0.241    |  0.240  | 
+| **640x640**   | 0.410   |  0.363      |  
+| **1280x1280** | 1.060   |  0.669      |  
+| **2560x2560** | 3.591   |  2.000     |  
+| **5120x5120** | 13.730  |  7.464     |  
   
 ### Yπολογισμός efficiency  
   
-| |1 Process| 4 Processes| 16 Processes| 64 Processes|   
-|--|--|--|--|--|   
-| **320x320**   | 1.0 | **1.724** | 0.920    | 0.318     |  
-| **640x640**   | 1.0 | 2.178     |**2.676** | 1.352     |  
-| **1280x1280** | 1.0 | 1.961     | 3.900    | **4.244** |  
-| **2560x2560** | 1.0 | 1.992     | 3.867    | **7.310** |  
-| **5120x5120** | 1.0 | 1.981     | 2.898    | **3.088** |  
+| |2 Threads / 16 Process| 4 Threads / 16 Processes|   
+|--|--|--|
+| **320x320**   | 0.241    |  0.240  | 
+| **640x640**   | 0.410   |  0.363      |  
+| **1280x1280** | 1.060   |  0.669      |  
+| **2560x2560** | 3.591   |  2.000     |  
+| **5120x5120** | 13.730  |  7.464     |  
   
  Δοκιμάσαμε να γεμίζουμε τους κόμβους, όπως στο MPI και λόγω του ότι τα threads δεν χωρούσαν σε κάθε κόμβο και γινόταν scheduling, άρα δεν γίνονταν παράλληλα, οι χρόνοι ήταν πολύ μεγάλοι. Αντίθετα από την υλοποίηση με απλό MPI, στην περίπτωση του υβριδικού MPI + openMP δεν γεμίζαμε τους κόμβους που χρησιμοποιούσαμε, αλλά αντιθέτως χρησιμοποιούσαμε πολλούς κόμβους, για να μπορούν να χρησιμοποιηθούν πολλά threads σε κάθε κόμβο χωρίς να γίνεται scheduling. Έτσι τα threads γδούλευαν παράλληλα.
- 
+
+### Έξοδος script
+Η έξοδος του script που τρέξαμε στην argo είχε με το παρακάτω format: 
+  Όπου:
+ - **Select**, ο αριθμός των κόμβων, 
+ - **Procs** ο αριθμός των διεργασιών που χρησιμοποίησε ο κάθε κόμβος, 
+ - **Processes** τα συνολικά processes που τρέχει το πρόγραμμα και 
+ - **Threads**, ο αριθμός των **νημάτων** ανα **διεργασία**.
+
+Η παρακάτω έξοδος είναι για μέγεθος προβλήματος **320x320** (με collapse).
+
+    Select 1 Procs 1 Processes 1 Threads 1: 1.661166
+    Select 2 Procs 2 Processes 4 Threads 1: 0.574466
+    Select 8 Procs 2 Processes 16 Threads 1: 0.310549
+    Select 10 Procs 8 Processes 64 Threads 1: 0.342512
+    
+    Select 1 Procs 1 Processes 1 Threads 2: 1.693688
+    Select 2 Procs 2 Processes 4 Threads 2: 0.372130
+    Select 8 Procs 2 Processes 16 Threads 2: 0.241463
+    Select 10 Procs 8 Processes 64 Threads 2: 10.313023
+    
+    Select 1 Procs 1 Processes 1 Threads 4: 1.737526
+    Select 2 Procs 2 Processes 4 Threads 4: 0.267918
+    Select 8 Procs 2 Processes 16 Threads 4: 0.239978
+    Select 10 Procs 8 Processes 64 Threads 4: 30.845762
+    
+    Select 1 Procs 1 Processes 1 Threads 8: 1.817256
+    Select 2 Procs 2 Processes 4 Threads 8: 0.608338
+    Select 8 Procs 2 Processes 16 Threads 8: 0.533826
+    Select 10 Procs 8 Processes 64 Threads 8: 3.604214
+    
+    Select 1 Procs 1 Processes 1 Threads 16: 1.987536
+    Select 2 Procs 2 Processes 4 Threads 16: 0.819975
+    Select 8 Procs 2 Processes 16 Threads 16: 0.657694
+    Select 10 Procs 8 Processes 64 Threads 16: 4.968571
+
+Η παρακάτω έξοδος είναι για μέγεθος προβλήματος **5120x5120** (Mε collapse).
+
+    Select 1 Procs 1 Processes 1 Threads 1: 421.063685
+    Select 2 Procs 2 Processes 4 Threads 1: 106.055394
+    Select 8 Procs 2 Processes 16 Threads 1: 26.498416
+    Select 10 Procs 8 Processes 64 Threads 1: 6.825866
+    
+    Select 1 Procs 1 Processes 1 Threads 2: 421.727274
+    Select 2 Procs 2 Processes 4 Threads 2: 54.166751
+    Select 8 Procs 2 Processes 16 Threads 2: 13.728413
+    Select 10 Procs 8 Processes 64 Threads 2: 17.354089
+    
+    Select 1 Procs 1 Processes 1 Threads 4: 422.450984
+    Select 2 Procs 2 Processes 4 Threads 4: 28.378362
+    Select 8 Procs 2 Processes 16 Threads 4: 7.463992
+    Select 10 Procs 8 Processes 64 Threads 4: 43.181102
+    
+    Select 1 Procs 1 Processes 1 Threads 8: (Το σταματήσαμε επειδή θα έπερνε περίπου 422")
+    Select 2 Procs 2 Processes 4 Threads 8: 41.686177
+    Select 8 Procs 2 Processes 16 Threads 8: 10.623288
+    Select 10 Procs 8 Processes 64 Threads 8: 10.164924
+    
+    Select 1 Procs 1 Processes 1 Threads 16: (Το σταματήσαμε επειδή θα έπερνε περίπου 422")
+    Select 2 Procs 2 Processes 4 Threads 16: 56.886217
+    Select 8 Procs 2 Processes 16 Threads 16: 15.242415
+    Select 10 Procs 8 Processes 64 Threads 16: 14.786688
+
+Τα υπόλοιπα output files υπάρχουν στο times_omp.zip το οποίο βρίσκεται στο φάκελο mpi+openmp.
+Έχουμε κάνει μετρήσεις και με collapse και χωρίς.
 
 ## Παραγόμενα αρχεία (MPI, MPI+OpenMp)
 Παρατηρήσαμε υπερβολική καθυστέρηση όταν γράφαμε κάθε **generation** σε αρχείο. Αυτό συνέβαινε διότι τα αρχεία αποθηκεύονται στον φάκελο **mpi/generations/row** ο οποίος βρίσκεται στο **front end** με αποτέλεσμα κάθε διεργασία από κάθε **κόμβο** να επικοινωνεί με το front end, πράγμα το οποίο λόγω των μηνυμάτων έχει καθυστερήσεις.
@@ -280,3 +344,4 @@ TODO: schedule
 Παρατηρήσαμε ότι υπάρχει ένας αριθμός από διεργασίες για τους οποίες το efficiency μεγαλώνει ενώ αν τους ανεβάσουμε περισσότερο το efficiency μειώνεται.
 
 Όλες οι μετρήσεις πραγματοποιήθηκαν στην argo.
+

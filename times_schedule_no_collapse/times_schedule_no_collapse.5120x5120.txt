@@ -1,0 +1,20 @@
+Select 1 Procs 1 Processes 1 Threads 1: 223.550570
+Select 2 Procs 2 Processes 4 Threads 1: 57.315717
+Select 8 Procs 2 Processes 16 Threads 1: 14.642937
+Select 10 Procs 8 Processes 64 Threads 1: 4.091818
+
+Select 1 Procs 1 Processes 1 Threads 2: 233.035735
+Select 2 Procs 2 Processes 4 Threads 2: 38.447651
+Select 8 Procs 2 Processes 16 Threads 2: 9.503356
+
+Select 2 Procs 2 Processes 4 Threads 4: 32.442433
+Select 8 Procs 2 Processes 16 Threads 4: 8.326161
+
+Select 2 Procs 2 Processes 4 Threads 8: 122.916090
+Select 8 Procs 2 Processes 16 Threads 8: 56.880162
+Select 10 Procs 8 Processes 64 Threads 8: 23.655381
+Select 10 Procs 8 Processes 64 Threads 8: 22.809559
+
+Select 2 Procs 2 Processes 4 Threads 16: 182.391121
+Select 8 Procs 2 Processes 16 Threads 16: 81.525495
+Select 10 Procs 8 Processes 64 Threads 16: 62.913039
